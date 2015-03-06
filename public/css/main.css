@@ -1,0 +1,11 @@
+tr {
+    opacity: 1;
+}
+tr.ng-enter {
+    -webkit-transition: 1s;
+    transition: 1s;
+    opacity: 0;
+}
+tr.ng-enter-active {
+    opacity: 1;
+}
