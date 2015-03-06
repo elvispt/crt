@@ -2,7 +2,7 @@
     <tbody>
         <tr ng-repeat="(id, data) in hnews | toArray : false | orderBy : 'time' : 'reverse'" data-id="{{ id }}" ng-animate="'animate'">
             <td><a href="{{ data.url }}" target="_blank">{{ data.title }}</a>
-                <small>({{ data.domain }})</small>
+                <small ng-if="data.domain">({{ data.domain }})</small>
                 <small class="center-block">{{ data.how_long }}</small>
             </td>
             <td><a class="btn btn-primary pull-right" href="{{ data.comments_url }}" target="_blank" role="button">cmts</a></td>
