@@ -29,7 +29,6 @@
     <!-- CSS -->
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/bootstrap-theme.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.8.2/angular-material.min.css">
     <link href="css/main.css" rel="stylesheet">
     <!-- ./CSS -->
 </head>
@@ -47,8 +46,7 @@
         </div>
         <form class="navbar-form navbar-left" role="search">
             <div class="form-group">
-                <input type="text" ng-model="search1" class="form-control" placeholder="Search news ...">
-                <md-button class="md-primary">Click me</md-button>
+                <input type="text" ng-model="newsSearch" class="form-control" placeholder="Search news ...">
             </div>
         </form>
         <p class="navbar-text navbar-right"><small>Built using the <a href="http://blog.ycombinator.com/hacker-news-api" class="navbar-link" target="_blank">Hacker News API</a></small></p>
@@ -66,12 +64,10 @@
 <script src='app/bootstrap.js'></script>
 <script src="app/angular.js"></script>
 <script src="app/angular-route.js"></script>
-<script src="app/module/angular-toArrayFilter.js"></script>
 <script src='app/sprintf.js'></script>
 <script src='app/firebase.js'></script>
 <script src="app/angular-animate.js"></script>
 <script src="app/angular-aria.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.8.2/angular-material.min.js"></script>
 <script src="app/utils.js"></script>
 <script src="app/app.js"></script>
 <script src="app/controller/FireHNController.js"></script>

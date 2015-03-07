@@ -1,16 +1,32 @@
 <div>
+    <div class="btn-group pull-left" role="group">
+        <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                ng-click="reverse=!reverse; order('time', reverse)">Time</button>
+        <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                ng-click="reverse=!reverse; order('score', reverse)">Score</button>
+        <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                ng-click="reverse=!reverse; order('num_comments', reverse)">Comments</button>
+        <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                ng-click="reverse=!reverse; order('title', reverse)">Title</button>
+    </div>
+    <div ng-if="hnews.length <= 0" class="text-center pull-right">
+        <span class="label label-default">Loading...</span>
+    </div>
     <table class="table table-striped list-stories">
         <tbody>
-            <tr ng-repeat="(id, data) in hnews | toArray : false | filter: search1 | orderBy : 'time' : 'reverse'" data-id="{{ id }}" ng-animate="'animate'">
-                <td><a href="{{ data.url }}" target="_blank">{{ data.title }}</a>
-                    <small ng-if="data.domain">({{ data.domain }})</small>
-                    <small class="center-block">{{ data.how_long }}</small>
-                </td>
-                <td><a class="btn btn-primary pull-right" href="{{ data.comments_url }}" target="_blank" role="button">cmts</a></td>
-            </tr>
-            <tr ng-if="Object.keys($scope.hnews).length <= 0;">
-                <td><strong>No news found. API is most likely having issues.</strong></td>
-            </tr>
+        <tr ng-repeat="(index, data) in hnews | filter : newsSearch"
+            data-id="{{ data.id }}" ng-animate="'animate'">
+            <td>{{ index }}</td>
+            <td>
+                <a href="{{ data.url }}" target="_blank">{{ data.title }}</a>
+                <small ng-if="data.domain">({{ data.domain }})</small>
+                <small class="center-block">{{ data.how_long }}</small>
+            </td>
+            <td>
+                <a class="btn btn-primary pull-right" href="{{ data.comments_url }}" target="_blank"
+                   role="button">cmts</a>
+            </td>
+        </tr>
         </tbody>
     </table>
 </div>
