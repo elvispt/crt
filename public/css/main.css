@@ -1,11 +1,25 @@
-tr {
+
+.list-stories > tbody > tr > td {
+    border-top: none;
+}
+.list-stories > tbody > tr {
     opacity: 1;
 }
-tr.ng-enter {
-    -webkit-transition: 1s;
-    transition: 1s;
-    opacity: 0;
+
+.list-stories > tbody > tr.ng-enter,
+.list-stories > tbody > tr.ng-leave,
+.list-stories > tbody > tr.ng-move {
+    transition: all linear 0.5s;
 }
-tr.ng-enter-active {
+
+.list-stories > tbody > tr.ng-leave.ng-leave-active,
+.list-stories > tbody > tr.ng-move,
+.list-stories > tbody > tr.ng-enter {
+    opacity: 0;
+    max-height: 0;
+}
+.list-stories > tbody > tr.ng-leave,
+.list-stories > tbody > tr.ng-move.ng-move-active,
+.list-stories > tbody > tr.ng-enter.ng-enter-active {
     opacity: 1;
 }

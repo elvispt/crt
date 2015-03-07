@@ -29,6 +29,7 @@
     <!-- CSS -->
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/bootstrap-theme.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.8.2/angular-material.min.css">
     <link href="css/main.css" rel="stylesheet">
     <!-- ./CSS -->
 </head>
@@ -44,7 +45,13 @@
         <div class="navbar-header">
             <span class="navbar-brand">&lt;/crt&gt;</span>
         </div>
-        <p class="navbar-text navbar-right">Built using <a href="http://blog.ycombinator.com/hacker-news-api" class="navbar-link" target="_blank">Hacker News API</a></p>
+        <form class="navbar-form navbar-left" role="search">
+            <div class="form-group">
+                <input type="text" ng-model="search1" class="form-control" placeholder="Search news ...">
+                <md-button class="md-primary">Click me</md-button>
+            </div>
+        </form>
+        <p class="navbar-text navbar-right"><small>Built using the <a href="http://blog.ycombinator.com/hacker-news-api" class="navbar-link" target="_blank">Hacker News API</a></small></p>
     </div>
 </nav>
 <!-- ./NAVBAR -->
@@ -54,6 +61,7 @@
 <!-- ./VIEW -->
 
 <!-- JS -->
+<!--<script src="app/extend.js"></script>-->
 <script src="app/jquery-2.1.3.js"></script>
 <script src='app/bootstrap.js'></script>
 <script src="app/angular.js"></script>
@@ -62,8 +70,8 @@
 <script src='app/sprintf.js'></script>
 <script src='app/firebase.js'></script>
 <script src="app/angular-animate.js"></script>
-<!--<script src="js/angular-aria.js"></script>-->
-<!--<script src="https://rawgit.com/angular/bower-material/master/angular-material.js"></script>-->
+<script src="app/angular-aria.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.8.2/angular-material.min.js"></script>
 <script src="app/utils.js"></script>
 <script src="app/app.js"></script>
 <script src="app/controller/FireHNController.js"></script>

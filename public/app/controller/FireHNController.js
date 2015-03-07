@@ -17,9 +17,10 @@ app.controller("FireHNController", function ($scope) { 'use strict';
             var story = new Firebase(sprintf(CONFIG.hn_references.story, value));
             story.orderByChild('id').on("value", function (query_snapshot) {
                 var item = query_snapshot.val();
-                if (item !== undefined && item.kids !== undefined && ! item.dead && $scope.hnews[item.id] === undefined) {
+                if (item !== undefined && item.kids !== undefined && ! item.dead
+                    && $scope.hnews[item.id] === undefined) {
                     var url = item.url !== "" ? item.url : sprintf(CONFIG.hn_story_url, item.id);
-                    var comments_url = sprintf(CONFIG.hn_references.hn_story_url, item.id);
+                    var comments_url = sprintf(CONFIG.hn_story_url, item.id);
                     var domain = "";
                     try {
                         domain = item.url !== "" ? new URL(item.url).hostname : comments_url;
@@ -27,7 +28,6 @@ app.controller("FireHNController", function ($scope) { 'use strict';
                         console.log("Failed getting hostname: " + e);
                         domain = comments_url;
                     }
-                    console.log(item.url);
                     $scope.hnews[item.id] = {
                         "id": item.id,
                         "url": url,
