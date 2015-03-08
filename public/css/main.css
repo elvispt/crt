@@ -24,3 +24,22 @@
 .ng-enter.ng-enter-active {
     opacity: 1;
 }
+
+@media (min-width: 300px) {
+    .navbar-left {
+        float: left ! important;
+    }
+}
+
+@media (min-width: 300px) {
+    .navbar-form {
+        width: auto;
+        border: 0;
+        margin-left: 0;
+        margin-right: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+}

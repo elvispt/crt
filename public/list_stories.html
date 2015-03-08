@@ -1,5 +1,5 @@
 <div>
-    <div class="btn-group pull-left" role="group">
+    <div class="form-group btn-group pull-left" role="group">
         <button class="btn btn-default" ng-disabled="hnews.length <= 0"
                 ng-click="reverse=!reverse; order('time', reverse)">Time</button>
         <button class="btn btn-default" ng-disabled="hnews.length <= 0"
@@ -16,7 +16,6 @@
         <tbody>
         <tr ng-repeat="(index, data) in hnews | filter : newsSearch"
             data-id="{{ data.id }}" ng-animate="'animate'">
-            <td>{{ index }}</td>
             <td>
                 <a href="{{ data.url }}" target="_blank">{{ data.title }}</a>
                 <small ng-if="data.domain">({{ data.domain }})</small>
