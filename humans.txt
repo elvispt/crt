@@ -3,7 +3,6 @@
 
 # TEAM
 
-    <name> -- <role> -- <twitter>
     <Elvis Pestana> -- <Developer> -- <@elvispt>
 
 # THANKS
@@ -13,5 +12,5 @@
 # TECHNOLOGY COLOPHON
 
     CSS3, HTML5
-    jQuery, Bootstrap, AngularJS
+    AngularJS, Bootstrap
     Firebase
