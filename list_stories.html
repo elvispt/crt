@@ -1,32 +1,41 @@
-<div class="form-group btn-group pull-left" role="group">
-    <button class="btn btn-default" ng-disabled="hnews.length <= 0"
-            ng-click="reverse=!reverse; order('time', reverse)">Time</button>
-    <button class="btn btn-default" ng-disabled="hnews.length <= 0"
-            ng-click="reverse=!reverse; order('score', reverse)">Score</button>
-    <button class="btn btn-default" ng-disabled="hnews.length <= 0"
-            ng-click="reverse=!reverse; order('num_comments', reverse)">Comments</button>
-    <button class="btn btn-default" ng-disabled="hnews.length <= 0"
-            ng-click="reverse=!reverse; order('title', reverse)">Title</button>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="form-group btn-group pull-left" role="group">
+            <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                    ng-click="reverse=!reverse; order('time', reverse)">Time
+            </button>
+            <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                    ng-click="reverse=!reverse; order('score', reverse)">Score
+            </button>
+            <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                    ng-click="reverse=!reverse; order('num_comments', reverse)">Comments
+            </button>
+            <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                    ng-click="reverse=!reverse; order('title', reverse)">Title
+            </button>
+        </div>
+    </div>
 </div>
 <div ng-if="hnews.length <= 0" class="text-center pull-right">
     <span class="label label-default">Loading...</span>
 </div>
-<table class="table table-striped list-stories">
-    <tbody>
-    <tr ng-repeat="(index, data) in hnews | filter : newsSearch"
-        data-id="{{ data.id }}" ng-animate="'animate'">
-        <td>
-            <a href="{{ data.url }}" target="_blank">{{ data.title }}</a>
-            <small ng-if="data.domain">({{ data.domain }})</small>
-            <small class="center-block">
-                {{ timeAgoFromEpochTime(data.time) }} | {{ data.num_comments }} comments
-            </small>
-
-        </td>
-        <td>
-            <a class="btn btn-primary pull-right" href="{{ data.comments_url }}" target="_blank"
-               role="button">cmts</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
+<div class="row">
+    <div class="col-xs-12">
+        <ul class="list-group">
+            <li class="list-group-item clearfix" ng-repeat="(index, data) in hnews | filter : newsSearch"
+                data-id="{{ data.id }}" ng-animate="'animate'">
+                <div class="pull-left">
+                    <a href="{{ data.url }}" target="_blank">{{ data.title }}</a>
+                    <small ng-if="data.domain">({{ data.domain }})</small>
+                    <small class="center-block">
+                        {{ timeAgoFromEpochTime(data.time) }} | <a href="{{ data.comments_url }}">{{ data.num_comments }} comments</a>
+                    </small>
+                </div>
+                <div class="pull-right">
+                    <a class="btn btn-block" href="{{ data.comments_url }}" target="_blank"
+                       role="button"><span class="glyphicon glyphicon-comment"></span></a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>

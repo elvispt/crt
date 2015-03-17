@@ -17,7 +17,6 @@
 .ng-move,
 .ng-enter {
     opacity: 0;
-    max-height: 0;
 }
 .ng-leave,
 .ng-move.ng-move-active,
@@ -43,3 +42,15 @@
         box-shadow: none;
     }
 }
+
+.list-group > .list-group-item:nth-child(even),
+.list-group > .list-group-item:hover {
+    background-color: #fafafa;
+}
+.list-group > .list-group-item > div.pull-left {
+    width: calc(100% - 34px);
+}
+.list-group > .list-group-item > div.pull-right {
+    width: 34px;
+}
+
