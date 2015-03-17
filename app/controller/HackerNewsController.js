@@ -59,21 +59,8 @@ app.controller("HackerNewsController", function ($scope, $filter, HackerNewsAPI)
     // save data to localStorage every N miliseconds.
     setInterval(function set_to_localStorage() {
         if (update_localStorage && $scope.hnews.length > 0) {
-            // we can't set the new data to localStore with Angular's $$hashKey.
-            var to_localStorage = [];
-            $scope.hnews.forEach(function (value) {
-                to_localStorage.push({
-                    comments_url: value.comments_url,
-                    domain: value.domain,
-                    id: value.id,
-                    num_comments: value.num_comments,
-                    score: value.score,
-                    time: value.time,
-                    title: value.title,
-                    url: value.url
-                });
-            });
-            localStorage.setItem(stories_localStore_key, JSON.stringify(to_localStorage));
+            // we can't set the new data to localStore with Angular's $$hashKey so we use angular.copy
+            localStorage.setItem(stories_localStore_key, JSON.stringify(angular.copy($scope.hnews)));
             update_localStorage = false;
             console.log("Data set to localStorage");
         }
