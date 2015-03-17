@@ -27,8 +27,7 @@
     <meta name="msapplication-TileImage" content="/favicon-144.png">
     <meta name="msapplication-config" content="/browserconfig.xml">
     <!-- CSS -->
-    <link href="css/bootstrap.css" rel="stylesheet">
-    <link href="css/bootstrap-theme.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">
     <!-- ./CSS -->
 </head>
@@ -41,10 +40,10 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-default">
     <div class="container-fluid">
-        <p class="navbar-text navbar-left">&lt;/crt&gt;</p>
+        <p class="navbar-text navbar-left"><a href="">&lt;/crt&gt;</a></p>
         <form class="navbar-form navbar-left" role="search">
             <div class="form-group">
-                <input type="text" ng-model="newsSearch" class="form-control" placeholder="Search news ...">
+                <input type="text" ng-model="newsSearch" class="form-control" placeholder="Search news...">
             </div>
         </form>
     </div>
@@ -60,10 +59,9 @@
 <script src='app/firebase.js'></script>
 <script src="app/lodash.js"></script>
 <script src="app/utils.js"></script>
-<script src="app/angular.js"></script>
-<script src="app/angular-route.js"></script>
-<script src="app/angular-animate.js"></script>
-<script src="app/angular-aria.js"></script>
+<script src="app/system/angular.min.js"></script>
+<script src="app/system/angular-route.min.js"></script>
+<script src="app/system/angular-animate.min.js"></script>
 <script src="app/app.js"></script>
 <script src="app/config/routes.js"></script>
 <script src="app/controller/HackerNewsController.js"></script>
