@@ -39,12 +39,11 @@
                 </div>
                 <div class="pull-right">
                     <button class="btn btn-block" role="button" ng-click="show=!show; loadComments(item.id, show);">
-                        <img ng-show="loader" src="/img/spinner.gif" alt="Loading..."/>
+                        <img ng-show="loader" src="img/spinner.gif" alt="Loading..."/>
                         <span ng-hide="loader" class="glyphicon glyphicon-comment"></span>
                     </button>
                 </div>
                 <div class="clearfix"></div>
-
                 <div class="comments-list" dx-start-with="comments[item.id]">
                     <div ng-repeat="cmt in $dxPrior" class="well-sm">
                         <div class="line-title">
@@ -54,15 +53,6 @@
                         <div dx-connect="cmt.childComments"></div>
                     </div>
                 </div>
-
-                <!--
-                <div ng-repeat="(index, cmt) in comments[item.id]" class="well-sm">
-                    <div class="line-title">
-                        <span><small>{{ cmt.by }}</small></span>
-                    </div>
-                    <span ng-bind-html="cmt.text | trustHtml"></span>
-                </div>
-                -->
             </li>
         </ul>
     </div>
