@@ -1,2 +1,9 @@
 // initialize the angular app
-var app = angular.module("app", ["ngRoute", "ngAnimate"]);
+var CRT = angular.module("CRT", [
+    "ngRoute",
+    "ngAnimate",
+    "LocalStorageModule",
+    "ngUtils",
+    "sprintf",
+    "dotjem.angular.tree"
+]);
