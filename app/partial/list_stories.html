@@ -1,0 +1,74 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="form-group btn-group pull-left" role="group">
+            <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                    ng-click="reverse=!reverse; filterOrderBy('time', reverse);">Time
+            </button>
+            <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                    ng-click="reverse=!reverse; filterOrderBy('score', reverse);">Score
+            </button>
+            <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                    ng-click="reverse=!reverse; filterOrderBy('commentsCount', reverse);">Comments
+            </button>
+            <button class="btn btn-default" ng-disabled="hnews.length <= 0"
+                    ng-click="reverse=!reverse; filterOrderBy('title', reverse);">Title
+            </button>
+            <button class="btn btn-warning" ng-click="refreshStories();">Refresh
+            </button>
+        </div>
+    </div>
+</div>
+<div ng-if="hnews.length <= 0" class="text-center pull-right">
+    <span class="label label-default">Loading...</span>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <ul class="list-group">
+            <li class="list-group-item" ng-repeat="item in hnews | filter : newsSearch"
+                data-id="{{ item.id }}" ng-animate="'animate'">
+                <div class="pull-left">
+                    <a href="{{ item.url }}" target="_blank">{{ item.title }}</a>
+                    <small ng-if="data.domain">({{ item.domain }})</small>
+                    <small class="center-block">
+                        <span title="{{data.time * 1000 | date:'yyyy-MM-dd HH:mm:ss'}}">{{ timeAgoFromEpochTime(item.time) }}</span>
+                        |
+                        <span>{{ item.score }} points</span>
+                        |
+                        <a target="_blank" href="{{ item.commentsURL }}">{{ item.commentsCount }} comments</a>
+                    </small>
+                </div>
+                <div class="pull-right">
+                    <button class="btn btn-block" role="button" ng-click="show=!show; loadComments(item.id, show);">
+                        <img ng-show="loader" src="/img/spinner.gif" alt="Loading..."/>
+                        <span ng-hide="loader" class="glyphicon glyphicon-comment"></span>
+                    </button>
+                </div>
+                <div class="clearfix"></div>
+
+                <div class="comments-list" dx-start-with="comments[item.id]">
+                    <div ng-repeat="cmt in $dxPrior" class="well-sm">
+                        <div class="line-title">
+                            <span><small>{{ cmt.by }}</small></span>
+                        </div>
+                        <span ng-bind-html="cmt.text | trustHtml"></span>
+                        <div dx-connect="cmt.childComments"></div>
+                    </div>
+                </div>
+
+                <!--
+                <div ng-repeat="(index, cmt) in comments[item.id]" class="well-sm">
+                    <div class="line-title">
+                        <span><small>{{ cmt.by }}</small></span>
+                    </div>
+                    <span ng-bind-html="cmt.text | trustHtml"></span>
+                </div>
+                -->
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <span ng-if="hnews.length > 0" class="label label-info">Stories: {{ hnews.length }}</span>
+    </div>
+</div>

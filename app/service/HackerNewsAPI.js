@@ -1,60 +1,44 @@
-app.service("HackerNewsAPI", function () {
+CRT.service("HackerNewsAPI", function ($filter, $q) {
     'use strict';
 
     var CONFIG = {
-            max_num_stories: 100,
-            hn_type_story: "story",
-            hn_references: {
-                top_stories: "https://hacker-news.firebaseio.com/v0/topstories",
-                story: "https://hacker-news.firebaseio.com/v0/item/%s"
+            MaxNumStories: 100,
+            hnFirebaseRefs: {
+                topStories: "https://hacker-news.firebaseio.com/v0/topstories",
+                item: "https://hacker-news.firebaseio.com/v0/item/%s"
             },
-            hn_story_url: "https://news.ycombinator.com/item?id=%s"
+            commentsURL: "https://news.ycombinator.com/item?id=%s"
         },
-        firebase_endpoint = new Firebase(CONFIG.hn_references.top_stories).limitToFirst(CONFIG.max_num_stories);
+        // where we defined publicy accessible methods.
+        filterSprintf = $filter("sprintf"),
+        that = {};
 
-    return {
-        get_stories: function (callback) {
-            // Attach an asynchronous callback to read the data at our posts reference
-            // This function will be called anytime new data is added to our Firebase reference, and we don"t need to write any extra code to make this happen.
-            firebase_endpoint.on("value", function (query_snapshot) {
-                    query_snapshot.val().forEach(function (value) {
-                        new Firebase(sprintf(CONFIG.hn_references.story, value)).orderByChild('id')
-                            .on("value", function (query_snapshot) {
-                                var item = build_item(query_snapshot.val());
-                                callback(item);
-                            }, function (error) {
-                                console.log("The read failed: " + error.code);
-                            });
-                    });
-                }, function (errorObject) {
-                    console.log("The read failed: " + errorObject.code);
-                })
-        }
+    that.topStories = function () {
+        var deferred = $q.defer();
+        // Attach an asynchronous callback to read the data at our posts reference
+        // This function will be called anytime new data is added to our Firebase reference, and we don"t need to write any extra code to make this happen.
+        new Firebase(CONFIG.hnFirebaseRefs.topStories).limitToFirst(CONFIG.MaxNumStories)
+            .once("value", function (query_snapshot) {
+                deferred.resolve(query_snapshot.val());
+            }, function (errorObject) {
+                console.log("The read failed: " + errorObject.code);
+                deferred.reject([]);
+            });
+        return deferred.promise;
     };
 
-    // parses and returns an object with the story.
-    function build_item (source) {
-        if (source !== undefined && source.kids !== undefined && !source.dead) {
-            var url = source.url !== "" ? source.url : sprintf(CONFIG.hn_story_url, source.id),
-                comments_url = sprintf(CONFIG.hn_story_url, source.id),
-                domain = "";
-            try {
-                domain = new URL(source.url !== "" ? source.url : comments_url).hostname;
-                domain = domain.replace("www.", "");
-            } catch (e) {
-                console.log("Failed getting hostname: " + e);
-                domain = comments_url;
-            }
-            return {
-                id: source.id,
-                url: url,
-                comments_url: comments_url,
-                num_comments: source.kids.length,
-                title: source.title,
-                domain: domain,
-                time: source.time,
-                score: source.score
-            };
-        }
-    }
+    // get a single item data
+    that.getItem = function (itemId) {
+        var deferred = $q.defer();
+        new Firebase(filterSprintf(CONFIG.hnFirebaseRefs.item, itemId)).orderByChild('id')
+            .on("value", function (query_snapshot) {
+                deferred.resolve(query_snapshot.val());
+            }, function (error) {
+                console.log("The read failed: " + error.code);
+                deferred.reject([]);
+            });
+        return deferred.promise;
+    };
+
+    return that;
 });

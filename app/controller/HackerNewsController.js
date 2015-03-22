@@ -1,74 +1,108 @@
-app.controller("HackerNewsController", function ($scope, $filter, HackerNewsAPI) {
+/*global localStorage: false, console: false, _: false, app: false , angular: false, Utils: false, window: false, setInterval: false*/
+
+CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, HackerNewsAPI, localStorageService) {
     'use strict';
 
-    var filter_order_by = $filter("orderBy"),
-        stories_localStore_key = "hackernews",
-        update_localStorage = false,
-        callback = function (item) {
-            if (item !== undefined) {
-                // angular black magic wasn't working so I had to wrap the callback in the apply function
-                $scope.$apply(function () {
-                    // everything seems ok. let's push a new story.
-                    // first checking if this news item already exists on the list.
-                    var index = _.findIndex($scope.hnews, function (story) {
-                            return story.id === item.id;
-                        }),
-                        local_diff = false;
-                    if (index === -1) {
-                        // doest not exist so a new entry is set
-                        $scope.hnews.push(item);
-                        local_diff = true;
-                        update_localStorage = true;
-                        console.log("New story added");
-                    } else {
-                        // this means it already exists. but is anything different?
-                        var news_item = $scope.hnews[index];
-                        Object.keys(item).forEach(function (key) {
-                            (function () {
-                                if (key !== "$$hashKey" && news_item[key] != item[key]) {
-                                    local_diff = true;
-                                    update_localStorage = true;
-                                    return;
-                                }
-                            })();
-                        });
-                        if (local_diff) {
-                            // something was different
-                            $scope.hnews[index] = item;
+    var CONFIG = {
+            commentsURL: "https://news.ycombinator.com/item?id=%s",
+            storiesLocalStorageKey: "hackernews"
+        },
+        filterOrderBy = $filter("orderBy"),
+        filterSprintf = $filter("sprintf"),
+        updateLocalStorage = false;
+
+    // parses and returns an object with the story.
+    function buildItem (source) {
+        if (source !== undefined && source.kids !== undefined && !source.dead) {
+            var url = source.url !== "" ? source.url : filterSprintf(CONFIG.commentsURL, source.id),
+                commentsURL = filterSprintf(CONFIG.commentsURL, source.id),
+                domain = "";
+            try {
+                domain = new URL(source.url !== "" ? source.url : commentsURL).hostname;
+                domain = domain.replace("www.", "");
+            } catch (e) {
+                console.log("Failed getting hostname: " + e);
+                domain = commentsURL;
+            }
+            return {
+                id: source.id,
+                url: url,
+                commentsURL: commentsURL,
+                commentsIds: source.kids,
+                commentsCount: source.kids.length,
+                title: source.title,
+                domain: domain,
+                time: source.time,
+                score: source.score
+            };
+        }
+    }
+
+    // remove items that are beyond the maximum defined
+    // yes this isn't very performance friendly, but I don't have to sort the list.
+    function removeExcessItems() {
+        var storiesList = $scope.hnews,
+            maxItems = 200;
+        if ($scope.hnews.length > maxItems) {
+            var oldestIndex = null,
+                oldestTimeFound = 8640000000000000;
+            storiesList.forEach(function (item, index) {
+                if (item.time < oldestTimeFound) {
+                    oldestIndex = index;
+                }
+            });
+            if (oldestIndex && typeof oldestIndex === "number") {
+                $scope.hnews.splice(oldestIndex, 1);
+            }
+            removeExcessItems();
+        }
+    }
+
+    // view-accessible methods
+    // shows comments on the page
+    $scope.loadComments = function (itemId, hide) {
+        function isValidComment(item) {
+            return item !== null && item !== undefined && !item.hasOwnProperty("dead") && item.text !== undefined;
+        }
+        // recursive function to obtain all the comments from a list a ids
+        function buildCommentsList(childIds, cmt) {
+            if (cmt === undefined) {
+                cmt = [];
+            }
+            childIds.forEach(function (value) {
+                HackerNewsAPI.getItem(value).then(function (item) {
+                    if (isValidComment(item)) {
+                        var tmpCmt = {
+                            id: item.id,
+                            by: item.by,
+                            text: item.text,
+                            time: item.time,
+                            kids: item.kids ? item.kids : [],
+                            childComments: []
+                        };
+                        if (tmpCmt.kids.length > 0) {
+                            buildCommentsList(tmpCmt.kids, tmpCmt.childComments);
                         }
+                        cmt.push(tmpCmt);
                     }
                 });
-            }
-        };
-
-    // lets get the news from localStorage first.
-    (function () {
-        var localnews = localStorage.getItem(stories_localStore_key);
-        if (!localnews) {
-            // we have nothing
-            $scope.hnews = [];
-        } else {
-            try {
-                $scope.hnews = JSON.parse(localnews);
-            } catch (e) {
-                console.log("Could not parse news list from localStorage: " + e);
-            }
+            });
         }
-    })();
-
-    // save data to localStorage every N miliseconds.
-    setInterval(function set_to_localStorage() {
-        if (update_localStorage && $scope.hnews.length > 0) {
-            // we can't set the new data to localStore with Angular's $$hashKey so we use angular.copy
-            localStorage.setItem(stories_localStore_key, JSON.stringify(angular.copy($scope.hnews)));
-            update_localStorage = false;
-            console.log("Data set to localStorage");
+        var index = _.findIndex($scope.hnews, function (story) {
+            return story.id === itemId;
+        });
+        if (index !== -1) {
+            $scope.comments[itemId] = [];
+            if (!hide) {
+                return;
+            }
+            buildCommentsList($scope.hnews[index].commentsIds, $scope.comments[itemId]);
         }
-    }, 10000);
+    };
 
     // this allows the end user to reorder the news stories.
-    $scope.order = function (predicate, reverse) {
-        $scope.hnews = filter_order_by($scope.hnews, predicate, reverse);
+    $scope.filterOrderBy = function (predicate, reverse) {
+        $scope.hnews = filterOrderBy($scope.hnews, predicate, reverse);
     };
 
     // set this utility to be accessible on the view
@@ -76,8 +110,66 @@ app.controller("HackerNewsController", function ($scope, $filter, HackerNewsAPI)
         return Utils.timeAgoFromEpochTime(time);
     };
 
-    // get the hacker news stories to show on the page.
-    HackerNewsAPI.get_stories(callback);
+    // allow to manually refresh the list of stories.
+    $scope.refreshStories = function () {
+        var promise = HackerNewsAPI.topStories();
+        promise.then(function (topStoriesIds) {
+            if (topStoriesIds instanceof Array) {
+                topStoriesIds.forEach(function (itemId) {
+                    var promise = HackerNewsAPI.getItem(itemId);
+                    promise.then(function (source) {
+                        var item = buildItem(source);
+                        if (item !== undefined) {
+                            // everything seems ok. let's push a new story.
+                            // first checking if this news item already exists on the list.
+                            var index = _.findIndex($scope.hnews, function (story) {
+                                    return story.id === item.id;
+                                }),
+                                updateStory = false;
+                            if (index === -1) {
+                                // doest not exist so a new entry is set
+                                $scope.hnews.push(item);
+                                updateStory = true;
+                                updateLocalStorage = true;
+                                console.log("New story added");
+                            } else {
+                                // this means it already exists. but is anything different?
+                                var newsItem = $scope.hnews[index];
+                                Object.keys(item).forEach(function (key) {
+                                    (function () {
+                                        if (key !== "$$hashKey" && newsItem[key] !== item[key]) {
+                                            updateStory = true;
+                                            updateLocalStorage = true;
+                                            return;
+                                        }
+                                    }());
+                                });
+                                if (updateStory) {
+                                    // something was different
+                                    $scope.hnews[index] = item;
+                                    console.log("Story updated");
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    };
+    // ./ view-accessible methods
+
+    // initialization procedures
+    (function init() {
+        var stories = localStorageService.get(CONFIG.storiesLocalStorageKey),
+            clearExcessItemsTimeout = 10000;
+        $scope.hnews = stories instanceof Array ? stories : [];
+        $scope.comments = {};
+        $scope.loader = false;
+        localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
+        $timeout(removeExcessItems, clearExcessItemsTimeout);
+        // finally refresh the list of stories.
+        $scope.refreshStories();
+    }());
 
     // DEBUG - just to be able to access scope on browser console.
     window.scope = $scope;
