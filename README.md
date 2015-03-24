@@ -9,16 +9,16 @@ The API uses Firebase, which is (really) fast.
 
 Take a look: [http://elvispt.github.io/crt/](http://elvispt.github.io/crt/)
 
-The stories are saved to localStorage, making it fast (on subsequent visits) but it will refresh the news. It's just the first load that takes time (around a second, but his also depends on your connection).
+The stories are saved to localStorage, making it fast (on subsequent visits) but it will refresh the news. It's just the first load that takes time (around a second, but it also depends on your connection).
 
 ##Technology stack:
 
 - Javascript ES5.1 (for now).
-- [Angular v1.3.14]()
+- [Angular v1.3.15]()
 - [sprintf](https://github.com/alexei/sprintf.js) javascript library.
 - [lodash](https://github.com/lodash/lodash) javascript utility library.
 - Firebase client library v2.2.1
 - [Bootstrap](http://getbootstrap.com/) v3.3.4
-- Notice: I don't remember where I got the function timeAgoFromEpochTime (app/utils.js).
+- Note: I don't remember where I got the function timeAgoFromEpochTime (app/utils.js).
 
 **I can (most definitely will) change the way this project behaves (maybe add server side) or change the styling, technology stack probably multiple times.**
