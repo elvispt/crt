@@ -41,4 +41,4 @@ gulp.task('compressJs', function () {
         .pipe(gulp.dest("app"));
 });
 
-gulp.task('compress', ['compressCss', 'compressJs']);
+gulp.task('default', ['compressCss', 'compressJs']);
