@@ -1,6 +1,6 @@
 CRT.config(function (localStorageServiceProvider) {
     localStorageServiceProvider
-        .setPrefix("__CRT-")
+        .setPrefix("CRT")
         .setStorageType("localStorage")
         .setNotify(true, true);
 });
