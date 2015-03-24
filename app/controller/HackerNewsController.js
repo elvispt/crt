@@ -58,6 +58,43 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         }
     }
 
+    // update or add a news story
+    function setStory(item) {
+        if (item !== undefined) {
+            // everything seems ok. let's push a new story.
+            // first checking if this news item already exists on the list.
+            var index = _.findIndex($scope.hnews, function (story) {
+                return story.id === item.id;
+            });
+            index === -1 ? addStory(item) : updateStory(item, index);
+        }
+    }
+
+    // add a new story to list
+    function addStory(item) {
+        // doest not exist so a new entry is set
+        $scope.hnews.push(item);
+        updateLocalStorage = true;
+        console.log("New story added");
+    }
+
+    // update a story on the items list
+    function updateStory(item, index) {
+        // this means it already exists. but is anything different?
+        var newsItem = $scope.hnews[index];
+        Object.keys(item).forEach(function (key) {
+            (function () {
+                if (key !== "$$hashKey" && newsItem[key] !== item[key]) {
+                    // something was different
+                    $scope.hnews[index] = item;
+                    updateLocalStorage = true;
+                    console.log("Story updated");
+                    return;
+                }
+            }());
+        });
+    }
+
     // view-accessible methods
     // shows comments on the page
     $scope.loadComments = function (itemId, hide) {
@@ -114,46 +151,12 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
     $scope.refreshStories = function () {
         var promise = HackerNewsAPI.topStories();
         promise.then(function (topStoriesIds) {
-            if (topStoriesIds instanceof Array) {
-                topStoriesIds.forEach(function (itemId) {
-                    var promise = HackerNewsAPI.getItem(itemId);
-                    promise.then(function (source) {
-                        var item = buildItem(source);
-                        if (item !== undefined) {
-                            // everything seems ok. let's push a new story.
-                            // first checking if this news item already exists on the list.
-                            var index = _.findIndex($scope.hnews, function (story) {
-                                    return story.id === item.id;
-                                }),
-                                updateStory = false;
-                            if (index === -1) {
-                                // doest not exist so a new entry is set
-                                $scope.hnews.push(item);
-                                updateStory = true;
-                                updateLocalStorage = true;
-                                console.log("New story added");
-                            } else {
-                                // this means it already exists. but is anything different?
-                                var newsItem = $scope.hnews[index];
-                                Object.keys(item).forEach(function (key) {
-                                    (function () {
-                                        if (key !== "$$hashKey" && newsItem[key] !== item[key]) {
-                                            updateStory = true;
-                                            updateLocalStorage = true;
-                                            return;
-                                        }
-                                    }());
-                                });
-                                if (updateStory) {
-                                    // something was different
-                                    $scope.hnews[index] = item;
-                                    console.log("Story updated");
-                                }
-                            }
-                        }
-                    });
+            topStoriesIds.forEach(function (itemId) {
+                var promise = HackerNewsAPI.getItem(itemId);
+                promise.then(function (source) {
+                    setStory(buildItem(source));
                 });
-            }
+            });
         });
     };
     // ./ view-accessible methods
