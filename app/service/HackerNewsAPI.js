@@ -9,10 +9,10 @@ CRT.service("HackerNewsAPI", function ($filter, $q) {
             },
             commentsURL: "https://news.ycombinator.com/item?id=%s"
         },
-        // where we defined publicy accessible methods.
         filterSprintf = $filter("sprintf"),
         that = {};
 
+    // returns, as promise, the list of top stories.
     that.topStories = function () {
         var deferred = $q.defer();
         // Attach an asynchronous callback to read the data at our posts reference
