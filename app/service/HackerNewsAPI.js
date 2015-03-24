@@ -19,7 +19,12 @@ CRT.service("HackerNewsAPI", function ($filter, $q) {
         // This function will be called anytime new data is added to our Firebase reference, and we don"t need to write any extra code to make this happen.
         new Firebase(CONFIG.hnFirebaseRefs.topStories).limitToFirst(CONFIG.MaxNumStories)
             .once("value", function (query_snapshot) {
-                deferred.resolve(query_snapshot.val());
+                var topStoriesIds = query_snapshot.val();
+                if (topStoriesIds instanceof Array) {
+                    deferred.resolve(topStoriesIds);
+                } else {
+                    deferred.reject([]);
+                }
             }, function (errorObject) {
                 console.log("The read failed: " + errorObject.code);
                 deferred.reject([]);
@@ -31,7 +36,7 @@ CRT.service("HackerNewsAPI", function ($filter, $q) {
     that.getItem = function (itemId) {
         var deferred = $q.defer();
         new Firebase(filterSprintf(CONFIG.hnFirebaseRefs.item, itemId)).orderByChild('id')
-            .on("value", function (query_snapshot) {
+            .once("value", function (query_snapshot) {
                 deferred.resolve(query_snapshot.val());
             }, function (error) {
                 console.log("The read failed: " + error.code);
