@@ -1,15 +1,16 @@
 /*global localStorage: false, console: false, _: false, app: false , angular: false, Utils: false, window: false, setInterval: false*/
 
-CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, HackerNewsAPI, localStorageService) {
+CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, HackerNewsAPI, localStorageService, NavbarService) {
     'use strict';
 
     var CONFIG = {
             commentsURL: "https://news.ycombinator.com/item?id=%s",
-            storiesLocalStorageKey: "hackernews"
+            storiesLocalStorageKey: "hackernews",
+            maxNumStories: 200
         },
         filterOrderBy = $filter("orderBy"),
         filterSprintf = $filter("sprintf"),
-        updateLocalStorage = false;
+        tmpCommentCounter = 0;
 
     // parses and returns an object with the story.
     function buildItem (source) {
@@ -41,9 +42,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
     // remove items that are beyond the maximum defined
     // yes this isn't very performance friendly, but I don't have to sort the list.
     function removeExcessItems() {
-        var storiesList = $scope.hnews,
-            maxItems = 200;
-        if ($scope.hnews.length > maxItems) {
+        var storiesList = $scope.hnews;
+        if ($scope.hnews.length > CONFIG.maxNumStories) {
             var oldestIndex = null,
                 oldestTimeFound = 8640000000000000;
             storiesList.forEach(function (item, index) {
@@ -74,7 +74,6 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
 
     // add a new story to list
     function addStory(item) {
-        updateLocalStorage = true;
         console.log("New story added");
         return $scope.hnews.push(item) - 1;
     }
@@ -88,7 +87,6 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
                 if (newsItem[key] !== value) {
                     if (key === "commentsCount" && value > newsItem[key]) {
                         $scope.hnews[index] = item;
-                        updateLocalStorage = true;
                         console.log("Story updated");
                     }
                 }
@@ -99,6 +97,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
 
     // recursive function to obtain all the comments from a list a ids
     function buildCommentsList(childIds, cmt) {
+        tmpCommentCounter += childIds.length;
         if (cmt === undefined) {
             cmt = [];
         }
@@ -151,11 +150,24 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
             return story.id === itemId;
         });
         if (index !== -1) {
+            $scope.loader[itemId] = !$scope.loader[itemId];
             $scope.comments[itemId] = [];
             if (!show) {
+                $scope.loader[itemId] = false;
                 return;
             }
+            tmpCommentCounter = 0;
             buildCommentsList($scope.hnews[index].commentsIds, $scope.comments[itemId]);
+            var intervalID = setInterval(function () {
+                if (tmpCommentCounter >= $scope.hnews[index].commentsCount) {
+                    // clears itself
+                    $scope.$apply(function() {
+                        $scope.hnews[index].commentsCount = tmpCommentCounter;
+                        $scope.loader[itemId] = false;
+                    });
+                    clearInterval(intervalID);
+                }
+            }, 500);
         }
     };
 
@@ -180,8 +192,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
                     var index = setStory(buildItem(source));
                     // now let's get the number of comments
                     if (index !== -1 && $scope.hnews[index].commentsCount === $scope.hnews[index].commentsIds.length) {
-                        $scope.hnews[index].commentsCount = 0;
                         $timeout(function () {
+                            $scope.hnews[index].commentsCount = 0;
                             totalCommentCount($scope.hnews[index].commentsIds, index);
                         }, 1000);
                     }

@@ -39,8 +39,8 @@
                 </div>
                 <div class="pull-right">
                     <button class="btn btn-block" role="button" ng-click="show=!show; loadComments(item.id, show);">
-                        <img ng-show="loader" src="img/spinner.gif" alt="Loading..."/>
-                        <span ng-hide="loader" class="glyphicon glyphicon-comment"></span>
+                        <img ng-show="loader[item.id]" src="img/spinner.gif" alt="Loading..."/>
+                        <span ng-hide="loader[item.id]" class="glyphicon glyphicon-comment"></span>
                     </button>
                 </div>
                 <div class="clearfix"></div>

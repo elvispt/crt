@@ -1,3 +1,4 @@
+/* ANGULAR */
 .ng-enter,
 .ng-leave,
 .ng-move {
@@ -15,7 +16,9 @@
 .ng-enter.ng-enter-active {
     opacity: 1;
 }
+/* ./ANGULAR */
 
+/* BOOTSTRAP OVERRIDES */
 @media (min-width: 300px) {
     .navbar-left {
         float: left ! important;
@@ -34,11 +37,12 @@
         box-shadow: none;
     }
 }
-
-.form-group.btn-group.pull-left button.btn.btn-default {
-    outline: none;
+.glyphicon {
+    color: #424242;
 }
+/* ./BOOTSTRAP OVERRIDES */
 
+/* SPECIFIC */
 .list-group > .list-group-item:nth-child(even),
 .list-group > .list-group-item:nth-child(even) .line-title > span {
     background-color: #fafafa;
@@ -53,12 +57,11 @@
 .list-group > .list-group-item > div.pull-right > button {
     background: none;
 }
-.list-group > .list-group-item > div.pull-right > button:focus {
+.list-group > .list-group-item > div.pull-right > button:focus,
+.form-group.btn-group.pull-left button.btn.btn-default {
     outline: none;
 }
-.glyphicon {
-    color: #424242;
-}
+
 .line-title {
     border-bottom: 1px solid #DDD;
     font-size: 1em;
@@ -75,3 +78,4 @@
     border-radius: 0;
     padding-right: 0;
 }
+/* ./SPECIFIC */
