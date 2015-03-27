@@ -3,8 +3,8 @@ CRT.factory("NavbarService", function () {
 
     var that = {};
 
-    that.navBar = {
-        searchTerm: ""
+    that.search = {
+        term: ""
     };
 
     return that;

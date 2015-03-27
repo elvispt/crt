@@ -6,7 +6,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
     var CONFIG = {
             commentsURL: "https://news.ycombinator.com/item?id=%s",
             storiesLocalStorageKey: "hackernews",
-            maxNumStories: 200
+            maxNumStories: 200,
+            clearExcessItemsTimeout: 5000
         },
         filterOrderBy = $filter("orderBy"),
         filterSprintf = $filter("sprintf"),
@@ -30,8 +31,9 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
                 url: url,
                 commentsURL: commentsURL,
                 commentsIds: source.kids,
-                commentsCount: source.kids.length,
+                commentsCount: source.descendants,
                 title: source.title,
+                text: source.text,
                 domain: domain,
                 time: source.time,
                 score: source.score
@@ -56,6 +58,20 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
             }
             removeExcessItems();
         }
+    }
+
+    // allow to manually refresh the list of stories.
+    function refreshStories () {
+        var promise = HackerNewsAPI.topStories();
+        promise.then(function (topStoriesIds) {
+            topStoriesIds.forEach(function (itemId) {
+                // get story details
+                var promise = HackerNewsAPI.getItem(itemId);
+                promise.then(function (source) {
+                    setStory(buildItem(source));
+                });
+            });
+        });
     }
 
     // update or add a news story
@@ -84,11 +100,15 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         var newsItem = $scope.hnews[index];
         angular.forEach(item, function (value, key) {
             (function () {
-                if (newsItem[key] !== value) {
-                    if (key === "commentsCount" && value > newsItem[key]) {
-                        $scope.hnews[index] = item;
-                        console.log("Story updated");
-                    }
+                var update = false;
+                if (key === "commentsIds") {
+                    update = newsItem[key].length !== value.length;
+                } else {
+                    update = newsItem[key] !== value;
+                }
+                if (update) {
+                    $scope.hnews[index] = item;
+                    console.log("Story updated");
                 }
             }());
         });
@@ -127,21 +147,17 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         return item !== null && item !== undefined && !item.hasOwnProperty("dead") && item.text !== undefined;
     }
 
-    // calculates the total number of comments for a story
-    function totalCommentCount(childIds, index) {
-        $scope.hnews[index].commentsCount += childIds.length;
-        childIds.forEach(function (value) {
-            var promise = HackerNewsAPI.getItem(value);
-            promise.then(function (item) {
-                if (isValidComment(item)) {
-                    var kids = item.kids ? item.kids : [];
-                    if (kids.length > 0) {
-                        totalCommentCount(kids, index);
-                    }
-                }
-            });
-        });
-    }
+    // events
+    // grabs the sortCommand event and sorts the list of items
+    $scope.$on("sortCommand", function (event, predicate, reverse) {
+        $scope.hnews = filterOrderBy($scope.hnews, predicate, reverse);
+    });
+
+    $scope.$on("refreshCommand", function (event) {
+        refreshStories();
+    });
+    // ./events
+
 
     // view-accessible methods
     // shows comments on the page
@@ -162,7 +178,6 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
                 if (tmpCommentCounter >= $scope.hnews[index].commentsCount) {
                     // clears itself
                     $scope.$apply(function() {
-                        $scope.hnews[index].commentsCount = tmpCommentCounter;
                         $scope.loader[itemId] = false;
                     });
                     clearInterval(intervalID);
@@ -171,50 +186,23 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         }
     };
 
-    // this allows the end user to reorder the news stories.
-    $scope.filterOrderBy = function (predicate, reverse) {
-        $scope.hnews = filterOrderBy($scope.hnews, predicate, reverse);
-    };
-
     // set this utility to be accessible on the view
     $scope.timeAgoFromEpochTime = function (time) {
         return Utils.timeAgoFromEpochTime(time);
-    };
-
-    // allow to manually refresh the list of stories.
-    $scope.refreshStories = function () {
-        var promise = HackerNewsAPI.topStories();
-        promise.then(function (topStoriesIds) {
-            topStoriesIds.forEach(function (itemId) {
-                // get story details
-                var promise = HackerNewsAPI.getItem(itemId);
-                promise.then(function (source) {
-                    var index = setStory(buildItem(source));
-                    // now let's get the number of comments
-                    if (index !== -1 && $scope.hnews[index].commentsCount === $scope.hnews[index].commentsIds.length) {
-                        $timeout(function () {
-                            $scope.hnews[index].commentsCount = 0;
-                            totalCommentCount($scope.hnews[index].commentsIds, index);
-                        }, 1000);
-                    }
-                });
-            });
-        });
     };
     // ./ view-accessible methods
 
     // initialization procedures
     (function init() {
-        var stories = localStorageService.get(CONFIG.storiesLocalStorageKey),
-            clearExcessItemsTimeout = 10000;
+        var stories = localStorageService.get(CONFIG.storiesLocalStorageKey);
         $scope.hnews = stories instanceof Array ? stories : [];
         $scope.comments = {};
         $scope.loader = {};
-        $scope.navBar = NavbarService.navBar;
+        $scope.search = NavbarService.search;
         localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
-        $timeout(removeExcessItems, clearExcessItemsTimeout);
+        $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
         // finally refresh the list of stories.
-        $scope.refreshStories();
+        refreshStories();
     }());
 
     // DEBUG - just to be able to access scope on browser console.
