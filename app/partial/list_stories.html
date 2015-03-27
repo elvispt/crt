@@ -36,6 +36,9 @@
                         |
                         <a target="_blank" href="{{ item.commentsURL }}">{{ item.commentsCount }} comments</a>
                     </small>
+                    <div ng-if="item.text" class="well-sm">
+                        <span ng-bind-html="item.text | trustHtml"></span>
+                    </div>
                 </div>
                 <div class="pull-right">
                     <button class="btn btn-block" role="button" ng-click="show=!show; loadComments(item.id, show);">
