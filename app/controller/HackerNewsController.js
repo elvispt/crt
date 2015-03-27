@@ -210,6 +210,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         $scope.hnews = stories instanceof Array ? stories : [];
         $scope.comments = {};
         $scope.loader = {};
+        $scope.navBar = NavbarService.navBar;
         localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
         $timeout(removeExcessItems, clearExcessItemsTimeout);
         // finally refresh the list of stories.
