@@ -1,15 +1,16 @@
 /*global localStorage: false, console: false, _: false, app: false , angular: false, Utils: false, window: false, setInterval: false*/
 
-CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, HackerNewsAPI, localStorageService) {
+CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, HackerNewsAPI, localStorageService, NavbarService) {
     'use strict';
 
     var CONFIG = {
             commentsURL: "https://news.ycombinator.com/item?id=%s",
-            storiesLocalStorageKey: "hackernews"
+            storiesLocalStorageKey: "hackernews",
+            maxNumStories: 200
         },
         filterOrderBy = $filter("orderBy"),
         filterSprintf = $filter("sprintf"),
-        updateLocalStorage = false;
+        tmpCommentCounter = 0;
 
     // parses and returns an object with the story.
     function buildItem (source) {
@@ -41,9 +42,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
     // remove items that are beyond the maximum defined
     // yes this isn't very performance friendly, but I don't have to sort the list.
     function removeExcessItems() {
-        var storiesList = $scope.hnews,
-            maxItems = 200;
-        if ($scope.hnews.length > maxItems) {
+        var storiesList = $scope.hnews;
+        if ($scope.hnews.length > CONFIG.maxNumStories) {
             var oldestIndex = null,
                 oldestTimeFound = 8640000000000000;
             storiesList.forEach(function (item, index) {
@@ -60,80 +60,114 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
 
     // update or add a news story
     function setStory(item) {
+        var index = -1;
         if (item !== undefined) {
             // everything seems ok. let's push a new story.
             // first checking if this news item already exists on the list.
-            var index = _.findIndex($scope.hnews, function (story) {
+            index = _.findIndex($scope.hnews, function (story) {
                 return story.id === item.id;
             });
-            index === -1 ? addStory(item) : updateStory(item, index);
+            index = index === -1 ? addStory(item) : updateStory(item, index);
         }
+        return index;
     }
 
     // add a new story to list
     function addStory(item) {
-        // doest not exist so a new entry is set
-        $scope.hnews.push(item);
-        updateLocalStorage = true;
         console.log("New story added");
+        return $scope.hnews.push(item) - 1;
     }
 
     // update a story on the items list
     function updateStory(item, index) {
         // this means it already exists. but is anything different?
         var newsItem = $scope.hnews[index];
-        Object.keys(item).forEach(function (key) {
+        angular.forEach(item, function (value, key) {
             (function () {
-                if (key !== "$$hashKey" && newsItem[key] !== item[key]) {
-                    // something was different
-                    $scope.hnews[index] = item;
-                    updateLocalStorage = true;
-                    console.log("Story updated");
-                    return;
+                if (newsItem[key] !== value) {
+                    if (key === "commentsCount" && value > newsItem[key]) {
+                        $scope.hnews[index] = item;
+                        console.log("Story updated");
+                    }
                 }
             }());
+        });
+        return index;
+    }
+
+    // recursive function to obtain all the comments from a list a ids
+    function buildCommentsList(childIds, cmt) {
+        tmpCommentCounter += childIds.length;
+        if (cmt === undefined) {
+            cmt = [];
+        }
+        childIds.forEach(function (value) {
+            var promise = HackerNewsAPI.getItem(value);
+            promise.then(function (item) {
+                if (isValidComment(item)) {
+                    var tmpCmt = {
+                        id: item.id,
+                        by: item.by,
+                        text: item.text,
+                        time: item.time,
+                        kids: item.kids ? item.kids : [],
+                        childComments: []
+                    };
+                    if (tmpCmt.kids.length > 0) {
+                        buildCommentsList(tmpCmt.kids, tmpCmt.childComments);
+                    }
+                    cmt.push(tmpCmt);
+                }
+            });
+        });
+    }
+
+    // checks if comment is valid
+    function isValidComment(item) {
+        return item !== null && item !== undefined && !item.hasOwnProperty("dead") && item.text !== undefined;
+    }
+
+    // calculates the total number of comments for a story
+    function totalCommentCount(childIds, index) {
+        $scope.hnews[index].commentsCount += childIds.length;
+        childIds.forEach(function (value) {
+            var promise = HackerNewsAPI.getItem(value);
+            promise.then(function (item) {
+                if (isValidComment(item)) {
+                    var kids = item.kids ? item.kids : [];
+                    if (kids.length > 0) {
+                        totalCommentCount(kids, index);
+                    }
+                }
+            });
         });
     }
 
     // view-accessible methods
     // shows comments on the page
-    $scope.loadComments = function (itemId, hide) {
-        function isValidComment(item) {
-            return item !== null && item !== undefined && !item.hasOwnProperty("dead") && item.text !== undefined;
-        }
-        // recursive function to obtain all the comments from a list a ids
-        function buildCommentsList(childIds, cmt) {
-            if (cmt === undefined) {
-                cmt = [];
-            }
-            childIds.forEach(function (value) {
-                HackerNewsAPI.getItem(value).then(function (item) {
-                    if (isValidComment(item)) {
-                        var tmpCmt = {
-                            id: item.id,
-                            by: item.by,
-                            text: item.text,
-                            time: item.time,
-                            kids: item.kids ? item.kids : [],
-                            childComments: []
-                        };
-                        if (tmpCmt.kids.length > 0) {
-                            buildCommentsList(tmpCmt.kids, tmpCmt.childComments);
-                        }
-                        cmt.push(tmpCmt);
-                    }
-                });
-            });
-        }
+    $scope.loadComments = function (itemId, show) {
         var index = _.findIndex($scope.hnews, function (story) {
             return story.id === itemId;
         });
         if (index !== -1) {
+            $scope.loader[itemId] = !$scope.loader[itemId];
             $scope.comments[itemId] = [];
-            if (!hide) {
+            if (!show) {
+                $scope.loader[itemId] = false;
                 return;
             }
+            tmpCommentCounter = 0;
             buildCommentsList($scope.hnews[index].commentsIds, $scope.comments[itemId]);
+            var intervalID = setInterval(function () {
+                if (tmpCommentCounter >= $scope.hnews[index].commentsCount) {
+                    // clears itself
+                    $scope.$apply(function() {
+                        $scope.hnews[index].commentsCount = tmpCommentCounter;
+                        $scope.loader[itemId] = false;
+                    });
+                    clearInterval(intervalID);
+                }
+            }, 500);
         }
     };
 
@@ -152,9 +186,17 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         var promise = HackerNewsAPI.topStories();
         promise.then(function (topStoriesIds) {
             topStoriesIds.forEach(function (itemId) {
+                // get story details
                 var promise = HackerNewsAPI.getItem(itemId);
                 promise.then(function (source) {
-                    setStory(buildItem(source));
+                    var index = setStory(buildItem(source));
+                    // now let's get the number of comments
+                    if (index !== -1 && $scope.hnews[index].commentsCount === $scope.hnews[index].commentsIds.length) {
+                        $timeout(function () {
+                            $scope.hnews[index].commentsCount = 0;
+                            totalCommentCount($scope.hnews[index].commentsIds, index);
+                        }, 1000);
+                    }
                 });
             });
         });
@@ -167,7 +209,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
             clearExcessItemsTimeout = 10000;
         $scope.hnews = stories instanceof Array ? stories : [];
         $scope.comments = {};
-        $scope.loader = false;
+        $scope.loader = {};
+        $scope.navBar = NavbarService.navBar;
         localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
         $timeout(removeExcessItems, clearExcessItemsTimeout);
         // finally refresh the list of stories.

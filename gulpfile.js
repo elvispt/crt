@@ -33,7 +33,9 @@ gulp.task('compressJs', function () {
             "app/config/routes.js",
             "app/config/localStorageServiceProvider.js",
             "app/controller/HackerNewsController.js",
-            "app/service/HackerNewsAPI.js"
+            "app/controller/NavbarController.js",
+            "app/service/HackerNewsAPI.js",
+            "app/service/NavbarService.js"
         ])
         .pipe(ngAnnotate())
         .pipe(concat("CRT.min.js"))
