@@ -60,6 +60,20 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         }
     }
 
+    // allow to manually refresh the list of stories.
+    function refreshStories () {
+        var promise = HackerNewsAPI.topStories();
+        promise.then(function (topStoriesIds) {
+            topStoriesIds.forEach(function (itemId) {
+                // get story details
+                var promise = HackerNewsAPI.getItem(itemId);
+                promise.then(function (source) {
+                    setStory(buildItem(source));
+                });
+            });
+        });
+    }
+
     // update or add a news story
     function setStory(item) {
         var index = -1;
@@ -86,7 +100,13 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         var newsItem = $scope.hnews[index];
         angular.forEach(item, function (value, key) {
             (function () {
-                if (newsItem[key] !== value) {
+                var update = false;
+                if (key === "commentsIds") {
+                    update = newsItem[key].length !== value.length;
+                } else {
+                    update = newsItem[key] !== value;
+                }
+                if (update) {
                     $scope.hnews[index] = item;
                     console.log("Story updated");
                 }
@@ -127,6 +147,18 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         return item !== null && item !== undefined && !item.hasOwnProperty("dead") && item.text !== undefined;
     }
 
+    // events
+    // grabs the sortCommand event and sorts the list of items
+    $scope.$on("sortCommand", function (event, predicate, reverse) {
+        $scope.hnews = filterOrderBy($scope.hnews, predicate, reverse);
+    });
+
+    $scope.$on("refreshCommand", function (event) {
+        refreshStories();
+    });
+    // ./events
+
+
     // view-accessible methods
     // shows comments on the page
     $scope.loadComments = function (itemId, show) {
@@ -154,28 +186,9 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         }
     };
 
-    // this allows the end user to reorder the news stories.
-    $scope.filterOrderBy = function (predicate, reverse) {
-        $scope.hnews = filterOrderBy($scope.hnews, predicate, reverse);
-    };
-
     // set this utility to be accessible on the view
     $scope.timeAgoFromEpochTime = function (time) {
         return Utils.timeAgoFromEpochTime(time);
-    };
-
-    // allow to manually refresh the list of stories.
-    $scope.refreshStories = function () {
-        var promise = HackerNewsAPI.topStories();
-        promise.then(function (topStoriesIds) {
-            topStoriesIds.forEach(function (itemId) {
-                // get story details
-                var promise = HackerNewsAPI.getItem(itemId);
-                promise.then(function (source) {
-                    setStory(buildItem(source));
-                });
-            });
-        });
     };
     // ./ view-accessible methods
 
@@ -185,11 +198,11 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         $scope.hnews = stories instanceof Array ? stories : [];
         $scope.comments = {};
         $scope.loader = {};
-        $scope.navBar = NavbarService.navBar;
+        $scope.search = NavbarService.search;
         localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
         $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
         // finally refresh the list of stories.
-        $scope.refreshStories();
+        refreshStories();
     }());
 
     // DEBUG - just to be able to access scope on browser console.
