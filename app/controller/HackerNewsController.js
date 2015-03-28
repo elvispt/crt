@@ -32,6 +32,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
                 commentsURL: commentsURL,
                 commentsIds: source.kids,
                 commentsCount: source.descendants,
+                author: source.by,
                 title: source.title,
                 text: source.text,
                 domain: domain,
@@ -127,7 +128,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
                 if (isValidComment(item)) {
                     var tmpCmt = {
                         id: item.id,
-                        by: item.by,
+                        author: item.by,
                         text: item.text,
                         time: item.time,
                         kids: item.kids ? item.kids : [],
@@ -153,6 +154,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         $scope.hnews = filterOrderBy($scope.hnews, predicate, reverse);
     });
 
+    // grab the refresh command and refresh the list of stories.
     $scope.$on("refreshCommand", function (event) {
         refreshStories();
     });
@@ -199,7 +201,9 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         $scope.comments = {};
         $scope.loader = {};
         $scope.search = NavbarService.search;
+        // this binds $scope.hnews property so that any change to it will be automatically saved to local storage.
         localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
+        // this is not critical, hence why it can executed later.
         $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
         // finally refresh the list of stories.
         refreshStories();
