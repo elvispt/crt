@@ -43,6 +43,10 @@
 /* ./BOOTSTRAP OVERRIDES */
 
 /* SPECIFIC */
+.navbar .navbar-form button:active,
+.navbar .navbar-form button:focus {
+    outline: none;
+}
 .list-group > .list-group-item:nth-child(even),
 .list-group > .list-group-item:nth-child(even) .line-title > span {
     background-color: #fafafa;
@@ -61,21 +65,13 @@
 .form-group.btn-group.pull-left button.btn.btn-default {
     outline: none;
 }
-
-.line-title {
-    border-bottom: 1px solid #DDD;
-    font-size: 1em;
-    height: 10px;
-    margin-bottom: 1em;
-}
-.line-title > span {
-    background-color: #ffffff;
-    padding-right: 0.5em;
-}
 .comments-list .well-sm {
     margin-left: 1em;
     border-left: 1px solid #DDDDDD;
     border-radius: 0;
     padding-right: 0;
+}
+.item-list .list-group .list-group-item button.btn.btn-block {
+    box-shadow: none;
 }
 /* ./SPECIFIC */

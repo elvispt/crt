@@ -2,7 +2,7 @@
     <span class="label label-default">Loading...</span>
 </div>
 <div class="row">
-    <div class="col-xs-12">
+    <div class="item-list col-xs-12">
         <ul class="list-group">
             <li class="list-group-item" ng-repeat="item in hnews | filter : search.term track by item.id"
                 data-id="{{ item.id }}" ng-animate="'animate'">
@@ -11,10 +11,12 @@
                     <small ng-if="data.domain">({{ item.domain }})</small>
                     <small class="center-block">
                         <span title="{{data.time * 1000 | date:'yyyy-MM-dd HH:mm:ss'}}">{{ timeAgoFromEpochTime(item.time) }}</span>
+                        by
+                        <span>{{ item.author }}</span>
                         |
                         <span>{{ item.score }} points</span>
                         |
-                        <a target="_blank" href="{{ item.commentsURL }}">{{ item.commentsCount }} comments</a>
+                        <a target="_blank" href="{{ item.commentsURL }}" >{{ item.commentsCount }} comments</a>
                     </small>
                     <div ng-if="item.text" class="well-sm">
                         <span ng-bind-html="item.text | trustHtml"></span>
@@ -26,11 +28,10 @@
                         <span ng-hide="loader[item.id]" class="glyphicon glyphicon-comment"></span>
                     </button>
                 </div>
-                <div class="clearfix"></div>
-                <div class="comments-list" dx-start-with="comments[item.id]">
+                <div class="clearfix comments-list" dx-start-with="comments[item.id]">
                     <div ng-repeat="cmt in $dxPrior" class="well-sm">
-                        <div class="line-title">
-                            <span><small>{{ cmt.by }}</small></span>
+                        <div>
+                            <small class="label" ng-class="(item.author == cmt.author) ? 'label-primary' : 'label-default'">{{ cmt.author }}</small>
                         </div>
                         <span ng-bind-html="cmt.text | trustHtml"></span>
                         <div dx-connect="cmt.childComments"></div>
