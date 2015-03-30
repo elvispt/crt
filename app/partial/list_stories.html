@@ -10,7 +10,7 @@
                     <a href="{{ item.url }}" target="_blank">{{ item.title }}</a>
                     <small ng-if="item.domain">({{ item.domain }})</small>
                     <small class="center-block">
-                        <span title="{{data.time * 1000 | date:'yyyy-MM-dd HH:mm:ss'}}">{{ timeAgoFromEpochTime(item.time) }}</span>
+                        <span title="{{ item.time * 1000 | date:'yyyy-MM-dd HH:mm:ss' }}">{{ timeAgoFromEpochTime(item.time) }}</span>
                         by
                         <span>{{ item.author }}</span>
                         |

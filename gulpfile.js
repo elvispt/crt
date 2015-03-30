@@ -1,8 +1,9 @@
-var gulp = require("gulp");
-var ngAnnotate = require("gulp-ng-annotate");
-var concat = require("gulp-concat");
-var uglify = require("gulp-uglify");
-var mc = require("gulp-minify-css");
+var gulp = require("gulp"),
+    ngAnnotate = require("gulp-ng-annotate"),
+    concat = require("gulp-concat"),
+    uglify = require("gulp-uglify"),
+    mc = require("gulp-minify-css"),
+    rename = require('gulp-rename');
 
 gulp.task("compressCss", function () {
     return gulp
@@ -46,6 +47,16 @@ gulp.task("compressHelpersJs", function () {
         .pipe(gulp.dest("app"));
 });
 
+gulp.task("compressWorkersJs", function () {
+    return gulp
+        .src([
+            "app/worker/removeExcessItems.js"
+        ])
+        .pipe(uglify())
+        .pipe(rename({suffix: ".min"}))
+        .pipe(gulp.dest("app/worker"));
+});
+
 gulp.task("compressJs", function () {
     return gulp
         .src([
@@ -63,4 +74,4 @@ gulp.task("compressJs", function () {
         .pipe(gulp.dest("app"));
 });
 
-gulp.task("default", ["compressCss", "compressAngular", "compressHelpersJs", "compressJs"]);
+gulp.task("default", ["compressCss", "compressAngular", "compressHelpersJs", "compressWorkersJs", "compressJs"]);

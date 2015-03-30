@@ -2,7 +2,7 @@ CRT.service("HackerNewsAPI", function ($filter, $q) {
     'use strict';
 
     var CONFIG = {
-            MaxNumStories: 100,
+            maxNumStories: 100,
             hnFirebaseRefs: {
                 topStories: "https://hacker-news.firebaseio.com/v0/topstories",
                 item: "https://hacker-news.firebaseio.com/v0/item/%s"
@@ -17,7 +17,7 @@ CRT.service("HackerNewsAPI", function ($filter, $q) {
         var deferred = $q.defer();
         // Attach an asynchronous callback to read the data at our posts reference
         // This function will be called anytime new data is added to our Firebase reference, and we don"t need to write any extra code to make this happen.
-        new Firebase(CONFIG.hnFirebaseRefs.topStories).limitToFirst(CONFIG.MaxNumStories)
+        new Firebase(CONFIG.hnFirebaseRefs.topStories).limitToFirst(CONFIG.maxNumStories)
             .once("value", function (query_snapshot) {
                 var topStoriesIds = query_snapshot.val();
                 if (topStoriesIds instanceof Array) {
