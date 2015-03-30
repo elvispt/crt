@@ -1,10 +1,11 @@
-var gulp = require("gulp");
-var ngAnnotate = require('gulp-ng-annotate');
-var concat = require("gulp-concat");
-var uglify = require("gulp-uglify");
-var mc = require("gulp-minify-css");
+var gulp = require("gulp"),
+    ngAnnotate = require("gulp-ng-annotate"),
+    concat = require("gulp-concat"),
+    uglify = require("gulp-uglify"),
+    mc = require("gulp-minify-css"),
+    rename = require('gulp-rename');
 
-gulp.task('compressCss', function () {
+gulp.task("compressCss", function () {
     return gulp
         .src([
             "css/bootstrap.css",
@@ -15,12 +16,22 @@ gulp.task('compressCss', function () {
         .pipe(gulp.dest("css"));
 });
 
-gulp.task('compressJs', function () {
+gulp.task("compressAngular", function () {
     return gulp
         .src([
             "app/system/angular.js",
             "app/system/angular-animate.js",
-            "app/system/angular-route.js",
+            "app/system/angular-route.js"
+        ])
+        .pipe(ngAnnotate())
+        .pipe(concat("CRT-angular.min.js"))
+        .pipe(uglify())
+        .pipe(gulp.dest("app"));
+});
+
+gulp.task("compressHelpersJs", function () {
+    return gulp
+        .src([
             "app/module/angular-local-storage.js",
             "app/module/angular-sprintf.js",
             "app/module/angular-filter-html.js",
@@ -28,7 +39,27 @@ gulp.task('compressJs', function () {
             "app/helper/firebase.js",
             "app/helper/lodash.js",
             "app/helper/sprintf.js",
-            "app/helper/utils.js",
+            "app/helper/utils.js"
+        ])
+        .pipe(ngAnnotate())
+        .pipe(concat("CRT-helpers.min.js"))
+        .pipe(uglify())
+        .pipe(gulp.dest("app"));
+});
+
+gulp.task("compressWorkersJs", function () {
+    return gulp
+        .src([
+            "app/worker/removeExcessItems.js"
+        ])
+        .pipe(uglify())
+        .pipe(rename({suffix: ".min"}))
+        .pipe(gulp.dest("app/worker"));
+});
+
+gulp.task("compressJs", function () {
+    return gulp
+        .src([
             "app/app.js",
             "app/config/routes.js",
             "app/config/localStorageServiceProvider.js",
@@ -38,9 +69,9 @@ gulp.task('compressJs', function () {
             "app/service/NavbarService.js"
         ])
         .pipe(ngAnnotate())
-        .pipe(concat("CRT.min.js"))
+        .pipe(concat("CRT-app.min.js"))
         .pipe(uglify())
         .pipe(gulp.dest("app"));
 });
 
-gulp.task('default', ['compressCss', 'compressJs']);
+gulp.task("default", ["compressCss", "compressAngular", "compressHelpersJs", "compressWorkersJs", "compressJs"]);

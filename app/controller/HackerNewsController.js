@@ -7,7 +7,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
             commentsURL: "https://news.ycombinator.com/item?id=%s",
             storiesLocalStorageKey: "hackernews",
             maxNumStories: 200,
-            clearExcessItemsTimeout: 5000
+            clearExcessItemsTimeout: 5000,
+            workerRemoveItemsPath: "app/worker/removeExcessItems.min.js"
         },
         filterOrderBy = $filter("orderBy"),
         filterSprintf = $filter("sprintf"),
@@ -43,21 +44,38 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
     }
 
     // remove items that are beyond the maximum defined
-    // yes this isn't very performance friendly, but I don't have to sort the list.
-    function removeExcessItems() {
-        var storiesList = $scope.hnews;
+    // we are using a worker to process the initial data.
+    function removeExcessItems() {;
         if ($scope.hnews.length > CONFIG.maxNumStories) {
-            var oldestIndex = null,
-                oldestTimeFound = 8640000000000000;
-            storiesList.forEach(function (item, index) {
-                if (item.time < oldestTimeFound) {
-                    oldestIndex = index;
-                }
+            var worker = new Worker("app/worker/removeExcessItems.js");
+            worker.postMessage({
+                items: $scope.hnews,
+                limit: CONFIG.maxNumStories
             });
-            if (oldestIndex && typeof oldestIndex === "number") {
-                $scope.hnews.splice(oldestIndex, 1);
-            }
-            removeExcessItems();
+            worker.onmessage = function (message) {
+                var ids = message.data,
+                    indexes = [];
+                if (ids instanceof Array && ids.length > 0) {
+                    $scope.hnews.forEach(function (value, index) {
+                        if (ids.indexOf(value.id) >= 0) {
+                            indexes.push(index);
+                        }
+                    });
+                    if (indexes.length > 0) {
+                        indexes.forEach(function (value) {
+                            $scope.$apply(function () {
+                                $scope.hnews.splice(value, 1);
+                            });
+                        });
+                    }
+                }
+                worker.terminate();
+            };
+            worker.onerror = function (message) {
+                console.log("worker ERROR");
+                console.log(message);
+                worker.terminate();
+            };
         }
     }
 
