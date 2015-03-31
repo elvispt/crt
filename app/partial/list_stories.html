@@ -28,7 +28,8 @@
                         <span ng-hide="loader[item.id]" class="glyphicon glyphicon-comment"></span>
                     </button>
                 </div>
-                <div class="clearfix comments-list" dx-start-with="comments[item.id]">
+                <div class="clearfix"></div>
+                <div class="comments-list" dx-start-with="comments[item.id]">
                     <div ng-repeat="cmt in $dxPrior" class="well-sm">
                         <div>
                             <small class="label" ng-class="(item.author == cmt.author) ? 'label-primary' : 'label-default'">{{ cmt.author }}</small>
