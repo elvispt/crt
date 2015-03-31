@@ -1,18 +1,35 @@
 /*global localStorage: false, console: false, _: false, app: false , angular: false, Utils: false, window: false, setInterval: false*/
 
-CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, HackerNewsAPI, localStorageService, NavbarService) {
+CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $interval, $q, HackerNewsAPI, localStorageService, NavbarService) {
     'use strict';
 
     var CONFIG = {
             commentsURL: "https://news.ycombinator.com/item?id=%s",
             storiesLocalStorageKey: "hackernews",
             maxNumStories: 200,
-            clearExcessItemsTimeout: 5000,
+            clearExcessItemsTimeout: 5000, // 5 seconds
+            refreshStoriesInterval: 60000, // 1 min
             workerRemoveItemsPath: "app/worker/removeExcessItems.min.js"
         },
         filterOrderBy = $filter("orderBy"),
         filterSprintf = $filter("sprintf"),
         tmpCommentCounter = 0;
+
+    // initialization procedures
+    (function init() {
+        var stories = localStorageService.get(CONFIG.storiesLocalStorageKey);
+        $scope.hnews = stories instanceof Array ? stories : [];
+        $scope.comments = {};
+        $scope.loader = {};
+        $scope.search = NavbarService.search;
+        // this binds $scope.hnews property so that any change to it will be automatically saved to local storage.
+        localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
+        // finally refresh the list of stories every n miliseconds
+        $interval(refreshStories, CONFIG.refreshStoriesInterval);
+        // this is not critical, hence why it can executed later.
+        $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
+        refreshStories();
+    }());
 
     // parses and returns an object with the story.
     function buildItem (source) {
@@ -45,9 +62,9 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
 
     // remove items that are beyond the maximum defined
     // we are using a worker to process the initial data.
-    function removeExcessItems() {;
+    function removeExcessItems() {
         if ($scope.hnews.length > CONFIG.maxNumStories) {
-            var worker = new Worker("app/worker/removeExcessItems.js");
+            var worker = new Worker(CONFIG.workerRemoveItemsPath);
             worker.postMessage({
                 items: $scope.hnews,
                 limit: CONFIG.maxNumStories
@@ -116,20 +133,19 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
     // update a story on the items list
     function updateStory(item, index) {
         // this means it already exists. but is anything different?
-        var newsItem = $scope.hnews[index];
+        var newsItem = $scope.hnews[index],
+            update = false;
         angular.forEach(item, function (value, key) {
-            (function () {
-                var update = false;
-                if (key === "commentsIds") {
-                    update = newsItem[key].length !== value.length;
-                } else {
-                    update = newsItem[key] !== value;
-                }
-                if (update) {
-                    $scope.hnews[index] = item;
-                    console.log("Story updated");
-                }
-            }());
+            update = false;
+            if (key === "commentsIds") {
+                update = newsItem[key].length !== value.length;
+            } else {
+                update = newsItem[key] !== value;
+            }
+            if (update) {
+                $scope.hnews[index] = item;
+                console.log("Story updated");
+            }
         });
         return index;
     }
@@ -178,7 +194,6 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
     });
     // ./events
 
-
     // view-accessible methods
     // shows comments on the page
     $scope.loadComments = function (itemId, show) {
@@ -211,21 +226,6 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $q, 
         return Utils.timeAgoFromEpochTime(time);
     };
     // ./ view-accessible methods
-
-    // initialization procedures
-    (function init() {
-        var stories = localStorageService.get(CONFIG.storiesLocalStorageKey);
-        $scope.hnews = stories instanceof Array ? stories : [];
-        $scope.comments = {};
-        $scope.loader = {};
-        $scope.search = NavbarService.search;
-        // this binds $scope.hnews property so that any change to it will be automatically saved to local storage.
-        localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
-        // this is not critical, hence why it can executed later.
-        $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
-        // finally refresh the list of stories.
-        refreshStories();
-    }());
 
     // DEBUG - just to be able to access scope on browser console.
     window.scope = $scope;
