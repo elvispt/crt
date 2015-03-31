@@ -133,20 +133,19 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     // update a story on the items list
     function updateStory(item, index) {
         // this means it already exists. but is anything different?
-        var newsItem = $scope.hnews[index];
+        var newsItem = $scope.hnews[index],
+            update = false;
         angular.forEach(item, function (value, key) {
-            (function () {
-                var update = false;
-                if (key === "commentsIds") {
-                    update = newsItem[key].length !== value.length;
-                } else {
-                    update = newsItem[key] !== value;
-                }
-                if (update) {
-                    $scope.hnews[index] = item;
-                    console.log("Story updated");
-                }
-            }());
+            update = false;
+            if (key === "commentsIds") {
+                update = newsItem[key].length !== value.length;
+            } else {
+                update = newsItem[key] !== value;
+            }
+            if (update) {
+                $scope.hnews[index] = item;
+                console.log("Story updated");
+            }
         });
         return index;
     }
@@ -194,7 +193,6 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         refreshStories();
     });
     // ./events
-
 
     // view-accessible methods
     // shows comments on the page
