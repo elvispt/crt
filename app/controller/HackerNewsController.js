@@ -13,7 +13,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         },
         filterOrderBy = $filter("orderBy"),
         filterSprintf = $filter("sprintf"),
-        tmpCommentCounter = 0;
+        tmpCommentCounter = 0,
+        tmpCommentLimit = 25;
 
     // initialization procedures
     (function init() {
@@ -156,28 +157,33 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
 
     // recursive function to obtain all the comments from a list a ids
     function buildCommentsList(childIds, cmt) {
-        tmpCommentCounter += childIds.length;
         if (cmt === undefined) {
             cmt = [];
         }
         childIds.forEach(function (value) {
-            var promise = HackerNewsAPI.getItem(value);
-            promise.then(function (item) {
-                if (isValidComment(item)) {
-                    var tmpCmt = {
-                        id: item.id,
-                        author: item.by,
-                        text: item.text,
-                        time: item.time,
-                        kids: item.kids ? item.kids : [],
-                        childComments: []
-                    };
-                    if (tmpCmt.kids.length > 0) {
-                        buildCommentsList(tmpCmt.kids, tmpCmt.childComments);
-                    }
-                    cmt.push(tmpCmt);
+            tmpCommentCounter += 1;
+            (function () {
+                if (tmpCommentCounter > tmpCommentLimit) {
+                    return;
                 }
-            });
+                var promise = HackerNewsAPI.getItem(value);
+                promise.then(function (item) {
+                    if (isValidComment(item)) {
+                        var tmpCmt = {
+                            id: item.id,
+                            author: item.by,
+                            text: item.text,
+                            time: item.time,
+                            kids: item.kids ? item.kids : [],
+                            childComments: []
+                        };
+                        if (tmpCmt.kids.length > 0) {
+                            buildCommentsList(tmpCmt.kids, tmpCmt.childComments);
+                        }
+                        cmt.push(tmpCmt);
+                    }
+                });
+            }());
         });
     }
 
@@ -214,15 +220,21 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
             tmpCommentCounter = 0;
             buildCommentsList($scope.hnews[index].commentsIds, $scope.comments[itemId]);
             var intervalID = setInterval(function () {
-                if (tmpCommentCounter >= $scope.hnews[index].commentsCount) {
+                if (tmpCommentCounter >= tmpCommentLimit || tmpCommentCounter >= $scope.hnews[index].commentsIds.length) {
                     // clears itself
                     $scope.$apply(function() {
                         $scope.loader[itemId] = false;
                     });
                     clearInterval(intervalID);
                 }
-            }, 500);
+            }, 1000);
         }
+    };
+
+    // allows loading children comments
+    $scope.loadCommentsChildren = function (parentComment) {
+        tmpCommentCounter = 0;
+        buildCommentsList(parentComment.kids, parentComment.childComments);
     };
 
     // set this utility to be accessible on the view
