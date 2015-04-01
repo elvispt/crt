@@ -35,6 +35,9 @@
                             <small class="label" ng-class="(item.author == cmt.author) ? 'label-primary' : 'label-default'">{{ cmt.author }}</small>
                         </div>
                         <span ng-bind-html="cmt.text | trustHtml"></span>
+                        <div ng-if="!cmt.childComments.length && cmt.kids.length > 0">
+                            <button class="btn btn-primary btn-xs" ng-click="loadCommentsChildren(cmt);">+</button>
+                        </div>
                         <div dx-connect="cmt.childComments"></div>
                     </div>
                 </div>
@@ -44,6 +47,6 @@
 </div>
 <div class="row">
     <div class="col-xs-12">
-        <span ng-if="hnews.length > 0" class="label label-info">Stories: {{ hnews.length }}</span>
+        <span ng-if="numItems.items > 0" class="label label-info">Stories: {{ numItems.items }}</span>
     </div>
 </div>
