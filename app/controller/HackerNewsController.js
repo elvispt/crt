@@ -22,6 +22,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         $scope.comments = {};
         $scope.loader = {};
         $scope.search = NavbarService.search;
+        $scope.numItems = NavbarService.numItems;
         // this binds $scope.hnews property so that any change to it will be automatically saved to local storage.
         localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
         // finally refresh the list of stories every n miliseconds
@@ -29,6 +30,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         // this is not critical, hence why it can executed later.
         $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
         refreshStories();
+        $scope.numItems.items = $scope.hnews.length;
     }());
 
     // parses and returns an object with the story.
@@ -86,6 +88,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                         });
                     }
                 }
+                $scope.numItems.items = $scope.hnews.length;
                 worker.terminate();
             };
             worker.onerror = function (message) {
@@ -127,6 +130,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     // add a new story to list
     function addStory(item) {
         console.log("New story added");
+        $scope.numItems.items = $scope.hnews.length;
         return $scope.hnews.push(item) - 1;
     }
 

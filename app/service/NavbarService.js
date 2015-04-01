@@ -7,5 +7,9 @@ CRT.factory("NavbarService", function () {
         term: ""
     };
 
+    that.numItems = {
+        items: 0
+    };
+
     return that;
 });
