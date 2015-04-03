@@ -1,20 +1,20 @@
-/*global localStorage: false, console: false, _: false, app: false , angular: false, Utils: false, window: false, setInterval: false*/
+/*global localStorage: false, console: false, _: false, app: false , angular: false, Utils: false, window: false, setInterval: false, CRT: false  */
 
-CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $interval, $q, HackerNewsAPI, localStorageService, NavbarService) {
+CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $interval, HackerNewsAPI, localStorageService, NavbarService) {
     'use strict';
 
     var CONFIG = {
             commentsURL: "https://news.ycombinator.com/item?id=%s",
             storiesLocalStorageKey: "hackernews",
             maxNumStories: 200,
-            clearExcessItemsTimeout: 5000, // 5 seconds
-            refreshStoriesInterval: 60000, // 1 min
+            clearExcessItemsTimeout: 15000,
+            refreshStoriesInterval: 60000,
             workerRemoveItemsPath: "app/worker/removeExcessItems.min.js"
         },
         filterOrderBy = $filter("orderBy"),
         filterSprintf = $filter("sprintf"),
         tmpCommentCounter = 0,
-        tmpCommentLimit = 25;
+        tmpCommentLimit = 20;
 
     // initialization procedures
     (function init() {
@@ -31,7 +31,6 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         // this is not critical, hence why it can executed later.
         $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
         refreshStories();
-        $scope.numItems.items = $scope.hnews.length;
     }());
 
     // parses and returns an object with the story.
@@ -162,10 +161,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         }
         childIds.forEach(function (value) {
             tmpCommentCounter += 1;
-            (function () {
-                if (tmpCommentCounter > tmpCommentLimit) {
-                    return;
-                }
+            if (tmpCommentCounter <= tmpCommentLimit) {
                 var promise = HackerNewsAPI.getItem(value);
                 promise.then(function (item) {
                     if (isValidComment(item)) {
@@ -174,7 +170,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                             author: item.by,
                             text: item.text,
                             time: item.time,
-                            kids: item.kids ? item.kids : [],
+                            kids: item.kids || [],
                             childComments: []
                         };
                         if (tmpCmt.kids.length > 0) {
@@ -183,7 +179,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                         cmt.push(tmpCmt);
                     }
                 });
-            }());
+            }
         });
     }
 
@@ -237,11 +233,24 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         buildCommentsList(parentComment.kids, parentComment.childComments);
     };
 
+    // allows loading more root level comments.
+    $scope.loadMoreComments = function (index, itemId) {
+        // find which root level comments where not yet loaded
+        var unloadedCommentIds = _.difference($scope.hnews[index].commentsIds,
+            _($scope.comments[itemId])
+                .filter('id')
+                .value()
+        );
+        console.log(unloadedCommentIds);
+        tmpCommentCounter = 0;
+        buildCommentsList(unloadedCommentIds, $scope.comments[itemId]);
+    };
+
     // set this utility to be accessible on the view
     $scope.timeAgoFromEpochTime = function (time) {
         return Utils.timeAgoFromEpochTime(time);
     };
-    // ./ view-accessible methods
+    // ./view-accessible methods
 
     // DEBUG - just to be able to access scope on browser console.
     window.scope = $scope;
