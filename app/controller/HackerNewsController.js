@@ -234,14 +234,19 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     };
 
     // allows loading more root level comments.
-    $scope.loadMoreComments = function (index, itemId) {
+    $scope.loadMoreComments = function (itemId) {
+        var index = _.findIndex($scope.hnews, function (story) {
+            return story.id === itemId;
+        });
         // find which root level comments where not yet loaded
         var unloadedCommentIds = _.difference($scope.hnews[index].commentsIds,
             _($scope.comments[itemId])
                 .filter('id')
+                .map(function (comment) {
+                    return comment.id;
+                })
                 .value()
         );
-        console.log(unloadedCommentIds);
         tmpCommentCounter = 0;
         buildCommentsList(unloadedCommentIds, $scope.comments[itemId]);
     };
