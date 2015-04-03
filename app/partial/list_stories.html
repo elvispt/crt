@@ -41,6 +41,9 @@
                         <div dx-connect="cmt.childComments"></div>
                     </div>
                 </div>
+                <div ng-if="comments[item.id].length > 0 && comments[item.id].length < item.commentsIds.length">
+                    <button class="btn btn-primary btn-sm" ng-click="loadMoreComments(item.id);">+</button>
+                </div>
             </li>
         </ul>
     </div>

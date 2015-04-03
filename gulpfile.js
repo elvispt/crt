@@ -16,19 +16,6 @@ gulp.task("compressCss", function () {
         .pipe(gulp.dest("css"));
 });
 
-gulp.task("compressAngular", function () {
-    return gulp
-        .src([
-            "app/system/angular.js",
-            "app/system/angular-animate.js",
-            "app/system/angular-route.js"
-        ])
-        .pipe(ngAnnotate())
-        .pipe(concat("CRT-angular.min.js"))
-        .pipe(uglify())
-        .pipe(gulp.dest("app"));
-});
-
 gulp.task("compressHelpersJs", function () {
     return gulp
         .src([
@@ -45,16 +32,6 @@ gulp.task("compressHelpersJs", function () {
         .pipe(concat("CRT-helpers.min.js"))
         .pipe(uglify())
         .pipe(gulp.dest("app"));
-});
-
-gulp.task("compressWorkersJs", function () {
-    return gulp
-        .src([
-            "app/worker/removeExcessItems.js"
-        ])
-        .pipe(uglify())
-        .pipe(rename({suffix: ".min"}))
-        .pipe(gulp.dest("app/worker"));
 });
 
 gulp.task("compressJs", function () {
@@ -74,4 +51,14 @@ gulp.task("compressJs", function () {
         .pipe(gulp.dest("app"));
 });
 
-gulp.task("default", ["compressCss", "compressAngular", "compressHelpersJs", "compressWorkersJs", "compressJs"]);
+gulp.task("compressWorkersJs", function () {
+    return gulp
+        .src([
+            "app/worker/removeExcessItems.js"
+        ])
+        .pipe(uglify())
+        .pipe(rename({suffix: ".min"}))
+        .pipe(gulp.dest("app/worker"));
+});
+
+gulp.task("default", ["compressCss", "compressHelpersJs", "compressWorkersJs", "compressJs"]);
