@@ -6,8 +6,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     var CONFIG = {
             commentsURL: "https://news.ycombinator.com/item?id=%s",
             storiesLocalStorageKey: "hackernews",
-            maxNumStories: 200,
-            clearExcessItemsTimeout: 15000,
+            maxNumStories: 150,
+            clearExcessItemsInterval: 90000,
             refreshStoriesInterval: 60000,
             workerRemoveItemsPath: "app/worker/removeExcessItems.min.js"
         },
@@ -29,8 +29,9 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         // finally refresh the list of stories every n miliseconds
         $interval(refreshStories, CONFIG.refreshStoriesInterval);
         // this is not critical, hence why it can executed later.
-        $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
+        $interval(removeExcessItems, CONFIG.clearExcessItemsInterval);
         refreshStories();
+        $scope.numItems.items = $scope.hnews.length;
     }());
 
     // parses and returns an object with the story.
@@ -51,7 +52,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                 url: url,
                 commentsURL: commentsURL,
                 commentsIds: source.kids,
-                commentsCount: source.descendants,
+                commentCount: source.descendants,
                 author: source.by,
                 title: source.title,
                 text: source.text,
@@ -65,6 +66,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     // remove items that are beyond the maximum defined
     // we are using a worker to process the initial data.
     function removeExcessItems() {
+        console.log("Clearing excess items");
         if ($scope.hnews.length > CONFIG.maxNumStories) {
             var worker = new Worker(CONFIG.workerRemoveItemsPath);
             worker.postMessage({
@@ -88,7 +90,9 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                         });
                     }
                 }
-                $scope.numItems.items = $scope.hnews.length;
+                $scope.$apply(function () {
+                    $scope.numItems.items = $scope.hnews.length;
+                });
                 worker.terminate();
             };
             worker.onerror = function (message) {
@@ -254,6 +258,19 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     // set this utility to be accessible on the view
     $scope.timeAgoFromEpochTime = function (time) {
         return Utils.timeAgoFromEpochTime(time);
+    };
+
+    // reset the news list.
+    $scope.resetNewsList = function () {
+        console.log("Removing and refreshing news list");
+        $scope.hnews = [];
+        $scope.comments = [];
+    };
+
+    // clear local storage data
+    $scope.clearLocalStorage = function () {
+        console.log("Clearing Local Storage");
+        localStorageService.clearAll();
     };
     // ./view-accessible methods
 
