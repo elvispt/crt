@@ -130,30 +130,17 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         childIds.forEach(function (value) {
             tmpCommentCounter += 1;
             if (tmpCommentCounter <= tmpCommentLimit) {
-                var promise = HackerNewsAPI.getItem(value);
+                var promise = HackerNewsAPI.getItemComment(value);
                 promise.then(function (item) {
-                    if (isValidComment(item)) {
-                        var tmpCmt = {
-                            id: item.id,
-                            author: item.by,
-                            text: item.text,
-                            time: item.time,
-                            kids: item.kids || [],
-                            childComments: []
-                        };
-                        if (tmpCmt.kids.length > 0) {
-                            buildCommentsList(tmpCmt.kids, tmpCmt.childComments);
+                    if (item) {
+                        if (item.kids.length > 0) {
+                            buildCommentsList(item.kids, item.childComments);
                         }
-                        cmt.push(tmpCmt);
+                        cmt.push(item);
                     }
                 });
             }
         });
-    }
-
-    // checks if comment is valid
-    function isValidComment(item) {
-        return item !== null && item !== undefined && !item.hasOwnProperty("dead") && item.text !== undefined;
     }
 
     // events

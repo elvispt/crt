@@ -10,10 +10,11 @@ CRT.service("HackerNewsAPI", function ($filter, $q) {
             commentsURL: "https://news.ycombinator.com/item?id=%s"
         },
         filterSprintf = $filter("sprintf"),
+        TYPE_COMMENT = "CMT",
         that = {};
 
     // parses and returns an object with the story.
-    function buildItem (source) {
+    function buildStoryItem(source) {
         if (source !== undefined && source.kids !== undefined && !source.dead) {
             var url = source.url !== "" ? source.url : filterSprintf(CONFIG.commentsURL, source.id),
                 commentsURL = filterSprintf(CONFIG.commentsURL, source.id),
@@ -41,6 +42,37 @@ CRT.service("HackerNewsAPI", function ($filter, $q) {
         }
     }
 
+    function buildCommentItem(source) {
+        if (isValidComment(source)) {
+            return {
+                id: source.id,
+                author: source.by,
+                text: source.text,
+                time: source.time,
+                kids: source.kids || [],
+                childComments: []
+            };
+        }
+    }
+
+    // checks if comment is valid
+    function isValidComment (item) {
+        return item !== null && item !== undefined && !item.hasOwnProperty("dead") && item.text !== undefined;
+    }
+
+    // gets an item from the API. Returns a promise.
+    function getItem(itemId, type) {
+        var deferred = $q.defer();
+        new Firebase(filterSprintf(CONFIG.hnFirebaseRefs.item, itemId)).orderByChild('id')
+            .once("value", function (query_snapshot) {
+                deferred.resolve(type === TYPE_COMMENT ? buildCommentItem(query_snapshot.val()) : buildStoryItem(query_snapshot.val()));
+            }, function (error) {
+                console.log("The read failed: " + error.code);
+                deferred.reject(false);
+            });
+        return deferred.promise;
+    }
+
     // returns, as promise, the list of top stories.
     that.topStories = function () {
         var deferred = $q.defer();
@@ -61,17 +93,14 @@ CRT.service("HackerNewsAPI", function ($filter, $q) {
         return deferred.promise;
     };
 
-    // get a single item data
+    // get a single news item data
     that.getItem = function (itemId) {
-        var deferred = $q.defer();
-        new Firebase(filterSprintf(CONFIG.hnFirebaseRefs.item, itemId)).orderByChild('id')
-            .once("value", function (query_snapshot) {
-                deferred.resolve(buildItem(query_snapshot.val()));
-            }, function (error) {
-                console.log("The read failed: " + error.code);
-                deferred.reject([]);
-            });
-        return deferred.promise;
+        return getItem(itemId);
+    };
+
+    // get a single comment item data
+    that.getItemComment = function (itemId) {
+        return getItem(itemId, TYPE_COMMENT);
     };
 
     return that;
