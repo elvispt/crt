@@ -4,19 +4,18 @@
 <div class="row">
     <div class="item-list col-xs-12">
         <ul class="list-group">
-            <li class="list-group-item" ng-repeat="item in hnews | filter : search.term track by item.id"
-                data-id="{{ item.id }}" ng-animate="'animate'">
+            <li class="list-group-item" ng-repeat="item in hnews | filter : search.term track by item.id" ng-animate="'animate'">
                 <div class="pull-left">
-                    <a href="{{ item.url }}" target="_blank">{{ item.title }}</a>
+                    <a ng-href="{{ item.url }}" target="_blank">{{ item.title }}</a>
                     <small ng-if="item.domain">({{ item.domain }})</small>
                     <small class="center-block">
-                        <span title="{{ item.time * 1000 | date:'yyyy-MM-dd HH:mm:ss' }}">{{ timeAgoFromEpochTime(item.time) }}</span>
+                        <span>{{ timeAgoFromEpochTime(item.time) }}</span>
                         by
                         <span>{{ item.author }}</span>
                         |
                         <span>{{ item.score }} points</span>
                         |
-                        <a target="_blank" href="{{ item.commentsURL }}" >{{ item.commentsCount }} comments</a>
+                        <a target="_blank" ng-href="{{ item.commentsURL }}" >{{ item.commentCount }} comments</a>
                     </small>
                     <div ng-if="item.text" class="well-sm">
                         <span ng-bind-html="item.text | trustHtml"></span>
@@ -51,5 +50,9 @@
 <div class="row">
     <div class="col-xs-12">
         <span ng-if="numItems.items > 0" class="label label-info">Stories: {{ numItems.items }}</span>
+        <div class="btn-group" role="group">
+            <button class="btn btn-warning btn-sm" ng-click="resetNewsList()">Reset News List</button>
+            <button class="btn btn-warning btn-sm" ng-click="clearLocalStorage()">Clear Local Storage</button>
+        </div>
     </div>
 </div>

@@ -4,15 +4,13 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     'use strict';
 
     var CONFIG = {
-            commentsURL: "https://news.ycombinator.com/item?id=%s",
             storiesLocalStorageKey: "hackernews",
-            maxNumStories: 200,
-            clearExcessItemsTimeout: 15000,
+            maxNumStories: 100,
+            clearExcessItemsTimeout: 20000,
             refreshStoriesInterval: 60000,
             workerRemoveItemsPath: "app/worker/removeExcessItems.min.js"
         },
         filterOrderBy = $filter("orderBy"),
-        filterSprintf = $filter("sprintf"),
         tmpCommentCounter = 0,
         tmpCommentLimit = 20;
 
@@ -26,45 +24,16 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         $scope.numItems = NavbarService.numItems;
         // this binds $scope.hnews property so that any change to it will be automatically saved to local storage.
         localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
+        refreshStories();
         // finally refresh the list of stories every n miliseconds
         $interval(refreshStories, CONFIG.refreshStoriesInterval);
-        // this is not critical, hence why it can executed later.
-        $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
-        refreshStories();
+        $scope.numItems.items = $scope.hnews.length;
     }());
-
-    // parses and returns an object with the story.
-    function buildItem (source) {
-        if (source !== undefined && source.kids !== undefined && !source.dead) {
-            var url = source.url !== "" ? source.url : filterSprintf(CONFIG.commentsURL, source.id),
-                commentsURL = filterSprintf(CONFIG.commentsURL, source.id),
-                domain = "";
-            try {
-                domain = new URL(source.url !== "" ? source.url : commentsURL).hostname;
-                domain = domain.replace("www.", "");
-            } catch (e) {
-                console.log("Failed getting hostname: " + e);
-                domain = commentsURL;
-            }
-            return {
-                id: source.id,
-                url: url,
-                commentsURL: commentsURL,
-                commentsIds: source.kids,
-                commentsCount: source.descendants,
-                author: source.by,
-                title: source.title,
-                text: source.text,
-                domain: domain,
-                time: source.time,
-                score: source.score
-            };
-        }
-    }
 
     // remove items that are beyond the maximum defined
     // we are using a worker to process the initial data.
     function removeExcessItems() {
+        console.log("Clearing excess items");
         if ($scope.hnews.length > CONFIG.maxNumStories) {
             var worker = new Worker(CONFIG.workerRemoveItemsPath);
             worker.postMessage({
@@ -72,23 +41,20 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                 limit: CONFIG.maxNumStories
             });
             worker.onmessage = function (message) {
-                var ids = message.data,
-                    indexes = [];
-                if (ids instanceof Array && ids.length > 0) {
-                    $scope.hnews.forEach(function (value, index) {
-                        if (ids.indexOf(value.id) >= 0) {
-                            indexes.push(index);
+                var storyIds = message.data;
+                if (storyIds instanceof Array && storyIds.length > 0) {
+                    storyIds.forEach(function (id) {
+                        var index = _.findIndex($scope.hnews, function (story) {
+                            return story.id === id;
+                        });
+                        if (index >= 0) {
+                            $scope.hnews.splice(index, 1);
                         }
                     });
-                    if (indexes.length > 0) {
-                        indexes.forEach(function (value) {
-                            $scope.$apply(function () {
-                                $scope.hnews.splice(value, 1);
-                            });
-                        });
-                    }
+                    $scope.$apply(function () {
+                        $scope.numItems.items = $scope.hnews.length;
+                    });
                 }
-                $scope.numItems.items = $scope.hnews.length;
                 worker.terminate();
             };
             worker.onerror = function (message) {
@@ -107,10 +73,12 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                 // get story details
                 var promise = HackerNewsAPI.getItem(itemId);
                 promise.then(function (source) {
-                    setStory(buildItem(source));
+                    setStory(source);
                 });
             });
         });
+        // this is not critical, hence why it can executed later.
+        $timeout(removeExcessItems, CONFIG.clearExcessItemsTimeout);
     }
 
     // update or add a news story
@@ -162,30 +130,17 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         childIds.forEach(function (value) {
             tmpCommentCounter += 1;
             if (tmpCommentCounter <= tmpCommentLimit) {
-                var promise = HackerNewsAPI.getItem(value);
+                var promise = HackerNewsAPI.getItemComment(value);
                 promise.then(function (item) {
-                    if (isValidComment(item)) {
-                        var tmpCmt = {
-                            id: item.id,
-                            author: item.by,
-                            text: item.text,
-                            time: item.time,
-                            kids: item.kids || [],
-                            childComments: []
-                        };
-                        if (tmpCmt.kids.length > 0) {
-                            buildCommentsList(tmpCmt.kids, tmpCmt.childComments);
+                    if (item) {
+                        if (item.kids.length > 0) {
+                            buildCommentsList(item.kids, item.childComments);
                         }
-                        cmt.push(tmpCmt);
+                        cmt.push(item);
                     }
                 });
             }
         });
-    }
-
-    // checks if comment is valid
-    function isValidComment(item) {
-        return item !== null && item !== undefined && !item.hasOwnProperty("dead") && item.text !== undefined;
     }
 
     // events
@@ -254,6 +209,19 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     // set this utility to be accessible on the view
     $scope.timeAgoFromEpochTime = function (time) {
         return Utils.timeAgoFromEpochTime(time);
+    };
+
+    // reset the news list.
+    $scope.resetNewsList = function () {
+        console.log("Removing and refreshing news list");
+        $scope.hnews = [];
+        $scope.comments = [];
+    };
+
+    // clear local storage data
+    $scope.clearLocalStorage = function () {
+        console.log("Clearing Local Storage");
+        localStorageService.clearAll();
     };
     // ./view-accessible methods
 
