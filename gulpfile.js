@@ -24,8 +24,6 @@ gulp.task("compressHelpersJs", function () {
             "app/module/angular-filter-html.js",
             "app/directive/dxTree.js",
             "app/helper/firebase.js",
-            "app/helper/lodash.js",
-            "app/helper/sprintf.js",
             "app/helper/utils.js"
         ])
         .pipe(ngAnnotate())
