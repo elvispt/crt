@@ -21,13 +21,12 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         $scope.comments = {};
         $scope.loader = {};
         $scope.search = NavbarService.search;
-        $scope.numItems = NavbarService.numItems;
+        $scope.numItems = $scope.hnews.length;
         // this binds $scope.hnews property so that any change to it will be automatically saved to local storage.
         localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
         refreshStories();
         // finally refresh the list of stories every n miliseconds
         $interval(refreshStories, CONFIG.refreshStoriesInterval);
-        $scope.numItems.items = $scope.hnews.length;
     }());
 
     // remove items that are beyond the maximum defined
@@ -52,7 +51,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                         }
                     });
                     $scope.$apply(function () {
-                        $scope.numItems.items = $scope.hnews.length;
+                        $scope.numItems = $scope.hnews.length;
                     });
                 }
                 worker.terminate();
@@ -98,27 +97,17 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     // add a new story to list
     function addStory(item) {
         console.log("New story added");
-        $scope.numItems.items = $scope.hnews.length;
+        $scope.numItems = $scope.hnews.length;
         return $scope.hnews.push(item) - 1;
     }
 
     // update a story on the items list
     function updateStory(item, index) {
         // this means it already exists. but is anything different?
-        var newsItem = $scope.hnews[index],
-            update = false;
-        angular.forEach(item, function (value, key) {
-            update = false;
-            if (key === "commentsIds") {
-                update = newsItem[key].length !== value.length;
-            } else {
-                update = newsItem[key] !== value;
-            }
-            if (update) {
-                $scope.hnews[index] = item;
-                console.log("Story updated");
-            }
-        });
+        if (!_.isEqual($scope.hnews[index], item)) {
+            $scope.hnews[index] = item;
+            console.log("Story updated");
+        }
         return index;
     }
 
@@ -216,6 +205,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         console.log("Removing and refreshing news list");
         $scope.hnews = [];
         $scope.comments = [];
+        refreshStories();
     };
 
     // clear local storage data
