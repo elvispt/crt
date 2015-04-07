@@ -58,10 +58,8 @@
     width: 34px;
     border-left: 1px solid #424242;
 }
-.list-group > .list-group-item > div.pull-right > button {
-    background: none;
-}
-.list-group > .list-group-item > div.pull-right > button:focus,
+button.btn-crt:focus,
+button.btn-crt,
 .form-group.btn-group.pull-left button.btn.btn-default {
     outline: none;
 }
@@ -71,7 +69,8 @@
     border-radius: 0;
     padding-right: 0;
 }
-.item-list .list-group .list-group-item button.btn.btn-block {
+button.btn-crt {
+    background: none;
     box-shadow: none;
 }
 /* ./SPECIFIC */

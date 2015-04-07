@@ -38,6 +38,7 @@ gulp.task("compressJs", function () {
             "app/app.js",
             "app/config/routes.js",
             "app/config/localStorageServiceProvider.js",
+            "app/directive/newsItem.js",
             "app/controller/HackerNewsController.js",
             "app/controller/NavbarController.js",
             "app/service/HackerNewsAPI.js",
