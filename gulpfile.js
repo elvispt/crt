@@ -29,7 +29,7 @@ gulp.task("compressHelpersJs", function () {
         .pipe(ngAnnotate())
         .pipe(concat("CRT-helpers.min.js"))
         .pipe(uglify())
-        .pipe(gulp.dest("app"));
+        .pipe(gulp.dest("app/helper"));
 });
 
 gulp.task("compressJs", function () {
