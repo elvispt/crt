@@ -32,7 +32,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     // remove items that are beyond the maximum defined
     // we are using a worker to process the initial data.
     function removeExcessItems() {
-        console.log("Clearing excess items");
+        console.info("Clearing excess items");
         if ($scope.hnews.length > CONFIG.maxNumStories) {
             var worker = new Worker(CONFIG.workerRemoveItemsPath);
             worker.postMessage({
@@ -57,8 +57,8 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
                 worker.terminate();
             };
             worker.onerror = function (message) {
-                console.log("worker ERROR");
-                console.log(message);
+                console.error("worker ERROR");
+                console.error(message);
                 worker.terminate();
             };
         }
@@ -96,19 +96,26 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
 
     // add a new story to list
     function addStory(item) {
-        console.log("New story added");
+        console.info("New story added");
         $scope.numItems = $scope.hnews.length;
         return $scope.hnews.push(item) - 1;
     }
 
     // update a story on the items list
     function updateStory(item, index) {
+        var oldItem = $scope.hnews[index];
         // this means it already exists. but is anything different?
-        if (!_.isEqual($scope.hnews[index], item)) {
-            $scope.hnews[index] = item;
-            console.log("Story updated");
-        }
+        Object.keys(oldItem).forEach(function (value) {
+            if (shouldUpdateItem(oldItem[value], item[value])) {
+                oldItem[value] = item[value];
+            }
+        });
         return index;
+    }
+
+    // should the item value be update, compared against the new item obtained.
+    function shouldUpdateItem(oldItem, newItem) {
+        return oldItem instanceof Array ? !_.isEqual(oldItem, newItem) : oldItem !== newItem;
     }
 
     // recursive function to obtain all the comments from a list a ids
@@ -202,7 +209,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
 
     // reset the news list.
     $scope.resetNewsList = function () {
-        console.log("Removing and refreshing news list");
+        console.info("Removing and refreshing news list");
         $scope.hnews = [];
         $scope.comments = [];
         refreshStories();
@@ -210,7 +217,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
 
     // clear local storage data
     $scope.clearLocalStorage = function () {
-        console.log("Clearing Local Storage");
+        console.info("Clearing Local Storage");
         localStorageService.clearAll();
     };
     // ./view-accessible methods
