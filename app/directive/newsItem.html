@@ -1,0 +1,38 @@
+<div class="pull-left">
+    <a ng-href="{{ item.url }}" target="_blank">{{ item.title }}</a>
+    <small ng-if="item.domain">({{ item.domain }})</small>
+    <small class="center-block">
+        <span>{{ timeAgo()(item.time) }}</span>
+        by
+        <span>{{ item.author }}</span>
+        |
+        <span>{{ item.score }} points</span>
+        |
+        <a target="_blank" ng-href="{{ item.commentsURL }}" >{{ item.commentCount }} comments</a>
+    </small>
+    <div ng-if="item.text" class="well-sm">
+        <span ng-bind-html="item.text | trustHtml"></span>
+    </div>
+</div>
+<div class="pull-right">
+    <button class="btn btn-block btn-crt" role="button" ng-click="show=!show; loadComments()(item.id, show);">
+        <img ng-show="loader[item.id]" src="img/spinner.gif" alt="Loading..."/>
+        <span ng-hide="loader[item.id]" class="glyphicon glyphicon-comment"></span>
+    </button>
+</div>
+<div class="clearfix"></div>
+<div class="comments-list" dx-start-with="comments[item.id]">
+    <div ng-repeat="cmt in $dxPrior" class="well-sm">
+        <div>
+            <small class="label" ng-class="(item.author == cmt.author) ? 'label-primary' : 'label-default'">{{ cmt.author }}</small>
+        </div>
+        <span ng-bind-html="cmt.text | trustHtml"></span>
+        <div ng-if="!cmt.childComments.length && cmt.kids.length > 0">
+            <button class="btn btn-primary btn-xs" ng-click="loadCommentsChildren()(cmt);">+</button>
+        </div>
+        <div dx-connect="cmt.childComments"></div>
+    </div>
+</div>
+<div ng-if="comments[item.id].length > 0 && comments[item.id].length < item.commentsIds.length">
+    <button class="btn btn-primary btn-sm" ng-click="loadMoreComments()(item.id);">+</button>
+</div>

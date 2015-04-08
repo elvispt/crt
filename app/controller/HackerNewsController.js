@@ -203,7 +203,7 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
     };
 
     // set this utility to be accessible on the view
-    $scope.timeAgoFromEpochTime = function (time) {
+    $scope.timeAgo = function (time) {
         return Utils.timeAgoFromEpochTime(time);
     };
 
