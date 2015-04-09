@@ -51,10 +51,10 @@
 .list-group > .list-group-item:nth-child(even) .line-title > span {
     background-color: #fafafa;
 }
-.list-group > .list-group-item > div.pull-left {
+div.pull-left.story-container {
     width: calc(100% - 34px);
 }
-.list-group > .list-group-item > div.pull-right {
+div.pull-right.comment-btn {
     width: 34px;
     border-left: 1px solid #424242;
 }

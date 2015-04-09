@@ -1,4 +1,4 @@
-<div class="pull-left">
+<div class="pull-left story-container">
     <a ng-href="{{ item.url }}" target="_blank">{{ item.title }}</a>
     <small ng-if="item.domain">({{ item.domain }})</small>
     <small class="center-block">
@@ -14,7 +14,7 @@
         <span ng-bind-html="item.text | trustHtml"></span>
     </div>
 </div>
-<div class="pull-right">
+<div class="pull-right comment-btn">
     <button class="btn btn-block btn-crt" role="button" ng-click="show=!show; loadComments()(item.id, show);">
         <img ng-show="loader[item.id]" src="img/spinner.gif" alt="Loading..."/>
         <span ng-hide="loader[item.id]" class="glyphicon glyphicon-comment"></span>
