@@ -2,7 +2,7 @@
     <a ng-href="{{ item.url }}" target="_blank">{{ item.title }}</a>
     <small ng-if="item.domain">({{ item.domain }})</small>
     <small class="center-block">
-        <span>{{ timeAgo()(item.time) }}</span>
+        <span>{{ item.time | timeAgoFromEpoch }}</span>
         by
         <span>{{ item.author }}</span>
         |

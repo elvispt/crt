@@ -202,11 +202,6 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
         buildCommentsList(unloadedCommentIds, $scope.comments[itemId]);
     };
 
-    // set this utility to be accessible on the view
-    $scope.timeAgo = function (time) {
-        return Utils.timeAgoFromEpochTime(time);
-    };
-
     // reset the news list.
     $scope.resetNewsList = function () {
         console.info("Removing and refreshing news list");

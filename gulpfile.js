@@ -21,10 +21,9 @@ gulp.task("compressHelpersJs", function () {
         .src([
             "app/module/angular-local-storage.js",
             "app/module/angular-sprintf.js",
-            "app/module/angular-filter-html.js",
+            "app/module/angular-filter-utils.js",
             "app/directive/dxTree.js",
-            "app/helper/firebase.js",
-            "app/helper/utils.js"
+            "app/helper/firebase.js"
         ])
         .pipe(ngAnnotate())
         .pipe(concat("CRT-helpers.min.js"))
@@ -38,7 +37,7 @@ gulp.task("compressJs", function () {
             "app/app.js",
             "app/config/routes.js",
             "app/config/localStorageServiceProvider.js",
-            "app/directive/newsItem.js",
+            "app/directive/crtNewsItem.js",
             "app/controller/HackerNewsController.js",
             "app/controller/NavbarController.js",
             "app/service/HackerNewsAPI.js",

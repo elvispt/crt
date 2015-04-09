@@ -10,6 +10,6 @@ CRT.directive("newsItem", function () {
            loadMoreComments: "&",
            timeAgo: "&"
        },
-       templateUrl: "app/directive/newsItem.html"
+       templateUrl: "app/directive/crtNewsItem.html"
    }
 });
