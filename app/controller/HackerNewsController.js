@@ -1,10 +1,10 @@
 /*global localStorage: false, console: false, _: false, app: false , angular: false, Utils: false, window: false, setInterval: false, CRT: false  */
 
-CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $interval, HackerNewsAPI, localStorageService, NavbarService) {
+CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $interval, HackerNewsAPI, localStorageService, NavbarService, GlobalConfig) {
     'use strict';
 
     var CONFIG = {
-            storiesLocalStorageKey: "hackernews",
+            localStorage: GlobalConfig.localStorage,
             maxNumStories: 100,
             clearExcessItemsTimeout: 20000,
             refreshStoriesInterval: 60000,
@@ -16,14 +16,14 @@ CRT.controller("HackerNewsController", function ($scope, $filter, $timeout, $int
 
     // initialization procedures
     (function init() {
-        var stories = localStorageService.get(CONFIG.storiesLocalStorageKey);
+        var stories = localStorageService.get(CONFIG.localStorage.key);
         $scope.hnews = stories instanceof Array ? stories : [];
         $scope.comments = {};
         $scope.loader = {};
         $scope.search = NavbarService.search;
         $scope.numItems = $scope.hnews.length;
         // this binds $scope.hnews property so that any change to it will be automatically saved to local storage.
-        localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.storiesLocalStorageKey);
+        localStorageService.bind($scope, "hnews", $scope.hnews, CONFIG.localStorage.key);
         refreshStories();
         // finally refresh the list of stories every n miliseconds
         $interval(refreshStories, CONFIG.refreshStoriesInterval);
