@@ -13,5 +13,6 @@ CRT.controller("NavbarController", function ($scope, $rootScope, NavbarService) 
     // initialization procedures
     (function init() {
         $scope.search = NavbarService.search;
+        $scope.actions = NavbarService.actions;
     }());
 });

@@ -13,7 +13,8 @@ var gulp = require("gulp"),
         "app/module/angular-sprintf.js",
         "app/module/angular-filter-utils.js",
         "app/directive/dxTree.js",
-        "app/helper/firebase.js"
+        "app/helper/firebase.js",
+        "app/helper/utils.js"
     ],
     jsFileList = [
         "app/app.js",
@@ -23,8 +24,10 @@ var gulp = require("gulp"),
         "app/directive/crtNewsItem.js",
         "app/controller/HackerNewsController.js",
         "app/controller/NavbarController.js",
+        "app/controller/StoryController.js",
         "app/service/HackerNewsAPI.js",
-        "app/service/NavbarService.js"
+        "app/service/NavbarService.js",
+        "app/service/HackerNewsListService.js"
     ],
     jsWorkerFileList = [
         "app/worker/removeExcessItems.js"
