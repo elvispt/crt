@@ -7,7 +7,7 @@ I'm building a simple news reader, starting with getting news stories from the H
 Since the [Hacker News API](http://blog.ycombinator.com/hacker-news-api) is public, there is no need for authentication and that's why this is all client side. No need for server side validation before pulling data from the API.
 The API uses Firebase, which is (really) fast.
 
-Take a look: [http://elvispt.github.io/crt/](http://elvispt.github.io/crt/)
+Take a look: [http://elvispt.github.io/crt-angular/](http://elvispt.github.io/crt-angular/)
 
 The stories are saved to localStorage, making it fast (on subsequent visits) but it will refresh the news. It's just the first load that takes time (around a second, but it also depends on your connection).
 
