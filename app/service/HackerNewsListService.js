@@ -84,7 +84,7 @@ CRT.factory("HackerNewsListService", function (localStorageService, HackerNewsAP
     // remove items that are beyond the maximum defined. Using a worker to process the initial data.
     function removeExcessItems() {
         console.info("Clearing excess items");
-        if (storiesList > CONFIG.maxNumStories) {
+        if (storiesList.length > CONFIG.maxNumStories) {
             var worker = new Worker(CONFIG.workerRemoveItemsPath);
             worker.postMessage({
                 items: storiesList,
@@ -93,6 +93,7 @@ CRT.factory("HackerNewsListService", function (localStorageService, HackerNewsAP
             worker.onmessage = function (message) {
                 var storyIds = message.data;
                 if (storyIds instanceof Array && storyIds.length > 0) {
+                    console.info("Clearing " + storyIds.length + " items.");
                     storyIds.forEach(function (id) {
                         var index = getStoryIndex(id);
                         if (index >= 0) {
