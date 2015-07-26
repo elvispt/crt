@@ -4,15 +4,11 @@
 <div class="row">
     <div class="item-list col-xs-12">
         <ul class="list-group">
-            <li class="list-group-item" ng-repeat="item in hnews | filter : search.term track by item.id" ng-animate="'animate'">
+            <li class="list-group-item" ng-repeat="item in hnews | filter : search.term track by item.id">
                 <news-item
                         item="item"
                         comments="comments"
-                        loader="loader"
                         load-comments="loadComments"
-                        load-comments-children="loadCommentsChildren"
-                        load-more-comments="loadMoreComments"
-                        time-ago="timeAgo"
                         ></news-item>
             </li>
         </ul>
@@ -20,10 +16,6 @@
 </div>
 <div class="row">
     <div class="col-xs-12">
-        <span ng-if="numItems > 0" class="label label-info">Stories: {{ numItems }}</span>
-        <div class="btn-group" role="group">
-            <button class="btn btn-warning btn-sm" ng-click="resetNewsList()">Reset News List</button>
-            <button class="btn btn-warning btn-sm" ng-click="clearLocalStorage()">Clear Local Storage</button>
-        </div>
+        <span ng-if="hnews.length > 0" class="label label-info">Stories: {{ hnews.length }}</span>
     </div>
 </div>

@@ -7,5 +7,9 @@ CRT.factory("NavbarService", function () {
         term: ""
     };
 
+    that.actions = {
+        enabled: true
+    };
+
     return that;
 });

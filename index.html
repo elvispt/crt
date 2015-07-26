@@ -27,7 +27,8 @@
     <meta name="msapplication-TileImage" content="/favicon-144.png">
     <meta name="msapplication-config" content="/browserconfig.xml">
     <!-- CSS -->
-    <link href="css/styles.min.css" rel="stylesheet">
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
     <!-- ./CSS -->
 </head>
 <body>
@@ -39,8 +40,8 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-default" ng-controller="NavbarController">
     <div class="container-fluid">
-        <p class="navbar-text navbar-left"><a href="">&lt;/crt&gt;</a></p>
-        <form class="navbar-form navbar-left" role="search">
+        <p class="navbar-text navbar-left"><a href="/#/">&lt;/crt&gt;</a></p>
+        <form ng-if="actions.enabled" class="navbar-form navbar-left" role="search">
             <div class="form-group">
                 <div class="input-group">
                     <input type="text" ng-model="search.term" class="form-control" placeholder="Search news...">
@@ -77,12 +78,32 @@
 <!-- JS -->
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-route.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.6.0/lodash.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/sprintf/1.0.1/sprintf.min.js"></script>
-<script src="app/helper/CRT-helpers.min.js"></script>
-<script src="app/CRT-app.min.js"></script>
 <!-- ./JS -->
+
+
+<!-- DEVELOPMENT ONLY -->
+<script src="app/module/angular-local-storage.js"></script>
+<script src="app/module/angular-sprintf.js"></script>
+<script src="app/module/angular-filter-utils.js"></script>
+<script src="app/directive/dxTree.js"></script>
+<script src='app/helper/firebase.js'></script>
+<script src='app/helper/utils.js'></script>
+<script src="app/app.js"></script>
+<script src="app/config/routes.js"></script>
+<script src="app/config/localStorageServiceProvider.js"></script>
+<script src="app/config/constant.js"></script>
+<script src="app/directive/crtNewsItem.js"></script>
+<script src="app/controller/HackerNewsController.js"></script>
+<script src="app/controller/NavbarController.js"></script>
+<script src="app/controller/StoryController.js"></script>
+<script src="app/service/HackerNewsAPI.js"></script>
+<script src="app/service/HackerNewsListService.js"></script>
+<script src="app/service/NavbarService.js"></script>
+<!-- ./DEVELOPMENT ONLY -->
+
+
 <!-- Built using the Hacker News API (http://blog.ycombinator.com/hacker-news-api -->
 </body>
 </html>

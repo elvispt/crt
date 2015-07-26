@@ -1,0 +1,22 @@
+<div class="pull-left story-container">
+    <a ng-href="{{ item.url }}" target="_blank">{{ item.title }}</a>
+    <small ng-if="item.domain">({{ item.domain }})</small>
+    <small class="center-block">
+        <span>{{ item.time | timeAgoFromEpoch }}</span>
+        by
+        <span>{{ item.author }}</span>
+        |
+        <span>{{ item.score }} points</span>
+        |
+        <a target="_blank" ng-href="{{ item.commentsURL }}" >{{ item.commentCount }} comments</a>
+    </small>
+    <div ng-if="item.text" class="well-sm">
+        <span ng-bind-html="item.text | trustHtml"></span>
+    </div>
+</div>
+<div class="pull-right comment-btn">
+    <a class="btn btn-block btn-crt" role="button" ng-href="#/story/{{ item.id }}">
+        <span class="glyphicon glyphicon-comment"></span>
+    </a>
+</div>
+<div class="clearfix"></div>
